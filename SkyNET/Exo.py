@@ -193,7 +193,6 @@ class Exo(object):
 					sys.exit(1)
 				print "Trying to shutdown gracefully"
 				self.graceful_shutdown=True
-				sys.exit(0)
 			except Exception:
 				print "p.run() interrupted"
 				traceback.print_exc()

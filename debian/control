@@ -1,0 +1,13 @@
+Source: boss-skynet
+Maintainer: David Greaves <david@dgreaves.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: python-boss-skynet
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp-pyclient
+Breaks: ${python:Breaks}
+Description: SkyNET for BOSS
+

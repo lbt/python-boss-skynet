@@ -1,7 +1,7 @@
 from distutils.core import setup
 from setuptools import setup
 
-setup(name='boss-skynet',
+setup(name='python-boss-skynet',
       version='0.1',
       description='SkyNET for BOSS',
       author='David Greaves',

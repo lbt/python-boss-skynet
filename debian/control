@@ -1,4 +1,4 @@
-Source: boss-skynet
+Source: python-boss-skynet
 Maintainer: David Greaves <david@dgreaves.com>
 Section: python
 Priority: optional

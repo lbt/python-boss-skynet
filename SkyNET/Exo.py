@@ -27,8 +27,8 @@ class ExoParticipant(Participant):
 		super(ExoParticipant,self).__init__(*args, **kwargs)
 		self.exo=exo
 
-	def consume(self):
-		self.exo.handler.handle_wi(self.wi)
+	def consume(self, workitem):
+		self.exo.handler.handle_wi(workitem)
 
 class Exo(object):
     """
@@ -152,7 +152,7 @@ class Exo(object):
 	def sighandler(self, signum, frame):
 		print "Caught signal", signum
 		if signum == signal.SIGTERM:
-			pass
+			self.graceful_shutdown=True
 		elif signum == signal.SIGSTOP:
 			pass
 		elif signum == signal.SIGHUP:
@@ -189,7 +189,7 @@ class Exo(object):
 			except IOError:
 				print "p.run() interrupted - IOError"
 				if self.graceful_shutdown:
-					print "Graceful didn't work - hard shutdown"
+					print "Now shutting down"
 					sys.exit(1)
 				print "Trying to shutdown gracefully"
 				self.graceful_shutdown=True

@@ -2,5 +2,14 @@ The python-boss-skynet package provides the SkyNET controller that is
 managed by daemontools.
 
 The sample ParticipantHandler can be installed into skynet:
+  make_skynet_participant -n example -p /usr/share/doc/python-boss-skynet/example-participant
 
-make_skynet_participant -n example -p /usr/share/doc/python-boss-skynet/example-participant
+Then it can be enabled (ie starts/stops automatically):
+  skynet enable example
+
+To monitor the log output:
+  skynet log example
+
+If the participant logic is changed then it can be reloaded:
+  skynet reload example
+

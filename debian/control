@@ -4,10 +4,12 @@ Section: python
 Priority: optional
 Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7)
 Standards-Version: 3.9.1
+Homepage: http://wiki.meego.com/Release_Infrastructure/BOSS/SkyNET
+Vcs-Git: git://gitorious.org/meego-infrastructure-tools/boss-python-skynet.git
+Vcs-Browser: http://meego.gitorious.org/meego-infrastructure-tools/boss-python-skynet
 
 Package: python-boss-skynet
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp-pyclient
 Breaks: ${python:Breaks}
 Description: SkyNET for BOSS
-

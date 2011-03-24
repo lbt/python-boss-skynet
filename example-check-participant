@@ -1,0 +1,43 @@
+#!/usr/bin/python
+
+"""
+This sample ParticipantHandler can be installed into skynet:
+
+skynet make_participant -n check -p /usr/share/doc/python-boss-skynet/example-check-participant
+
+This participant checks for the existence of /tmp/success and sends
+any contents to the next participant
+
+"""
+
+# The message containers are a minimal requirement
+from SkyNET import (WorkItemCtrl, ParticipantCtrl, Workitem)
+
+# Additional python can be used but bear in mind that this code is run
+# in the context of an AMQP message handling system
+
+class ParticipantHandler(object):
+    def handle_wi_control(self, ctrl):
+        pass
+    
+    def handle_lifecycle_control(self, ctrl):
+        pass
+    
+    def handle_wi(self, wi):
+
+        # We may want to examine the fields structure
+        if 'debug_dump' in wi.fields():
+            print json.dumps(wi.to_h(), sort_keys=True, indent=4)
+
+        # Some meaningless logic
+        fname="/tmp/success"
+        print "checking for %s" % fname
+        try:
+            f = open(fname)
+            contents = f.read(1024)
+            wi.fields()["contents"] = contents
+            print "Read %s" % fname
+            wi.set_result(True)
+        except IOError:
+            print "Failed to read %s" % fname
+            wi.set_result(False)

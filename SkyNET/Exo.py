@@ -27,8 +27,8 @@ class ExoParticipant(Participant):
 		super(ExoParticipant,self).__init__(*args, **kwargs)
 		self.exo=exo
 
-	def consume(self, workitem):
-		self.exo.handler.handle_wi(workitem)
+	def consume(self):
+		self.exo.handler.handle_wi(self.workitem)
 
 class Exo(object):
     """

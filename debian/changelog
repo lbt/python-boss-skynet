@@ -1,3 +1,9 @@
+python-boss-skynet (0.2-2) unstable; urgency=low
+
+  * Update setup.py 
+
+ -- David Greaves <david@dgreaves.com>  Fri, 25 Mar 2011 16:30:06 +0000
+
 python-boss-skynet (0.2-1) unstable; urgency=low
 
   * Sample participants used in the BOSS installation guide

@@ -10,7 +10,7 @@ try:
 except ImportError:
     import simplejson as json
 
-DEFAULT_BOSS_CONFIG_FILE = "/etc/skynet/boss.config"
+DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
 
 if __name__ == "__main__":
     main()
@@ -84,7 +84,7 @@ class Exo(object):
         for this participant.
 
         Config information is read from the default location : 
-          /etc/skynet/boss.config
+          /etc/skynet/skynet.conf
           which can be overridden by the 'local_config_file'
           """
 
@@ -127,7 +127,7 @@ class Exo(object):
 
 	def parse_config(self, config_file):
         config = ConfigParser.SafeConfigParser()
-        config.read([DEFAULT_BOSS_CONFIG_FILE, config_file])
+        config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
 
 		# Validate the BOSS section options
 		section="boss"

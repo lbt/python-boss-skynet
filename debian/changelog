@@ -1,3 +1,9 @@
+python-boss-skynet (0.2-4) unstable; urgency=low
+
+  * Use /etc/skynet/skynet.conf as the default config file
+
+ -- David Greaves <david@dgreaves.com>  Mon, 28 Mar 2011 22:55:54 +0100
+
 python-boss-skynet (0.2-3) unstable; urgency=low
 
   * python-ruote-amqp-pyclient is now python-ruote-amqp

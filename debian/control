@@ -10,6 +10,6 @@ Vcs-Browser: http://meego.gitorious.org/meego-infrastructure-tools/boss-python-s
 
 Package: python-boss-skynet
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp-pyclient
+Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp
 Breaks: ${python:Breaks}
 Description: SkyNET for BOSS

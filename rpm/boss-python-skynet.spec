@@ -1,7 +1,7 @@
 %define name boss-python-skynet
 %define version 0.2
 %define unmangled_version 0.2
-%define release 3
+%define release 4
 
 Summary: Boss Python SkyNET
 Name: %{name}

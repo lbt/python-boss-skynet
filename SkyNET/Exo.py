@@ -10,7 +10,7 @@ try:
 except ImportError:
     import simplejson as json
 
-DEFAULT_BOSS_CONFIG_FILE = "/etc/skynet/boss.config"
+DEFAULT_BOSS_CONFIG_FILE = "/etc/skynet/skynet.conf"
 
 if __name__ == "__main__":
     main()

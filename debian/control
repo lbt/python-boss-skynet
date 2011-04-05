@@ -2,7 +2,7 @@ Source: python-boss-skynet
 Maintainer: David Greaves <david@dgreaves.com>
 Section: python
 Priority: optional
-Build-Depends: python-setuptools (>= 0.6b3), python, debhelper (>= 7), python-support
+Build-Depends: python-setuptools (>= 0.6b3), debhelper (>= 7), python-support (>= 0.8.4)
 Standards-Version: 3.9.1
 Homepage: http://wiki.meego.com/Release_Infrastructure/BOSS/SkyNET
 Vcs-Git: git://gitorious.org/meego-infrastructure-tools/boss-python-skynet.git

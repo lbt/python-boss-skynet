@@ -1,3 +1,9 @@
+python-boss-skynet (0.2-5) unstable; urgency=low
+
+  * Fix some lintian warnings.
+
+ -- Islam Amer <islam.amer@nokia.com>  Tue, 05 Apr 2011 14:39:33 +0300
+
 python-boss-skynet (0.2-2) unstable; urgency=low
 
   * Update setup.py 

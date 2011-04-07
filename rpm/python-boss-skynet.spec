@@ -1,4 +1,4 @@
-%define name boss-python-skynet
+%define name python-boss-skynet
 %define version 0.2
 %define unmangled_version 0.2
 %define release 4
@@ -7,12 +7,13 @@ Summary: Boss Python SkyNET
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Source0: %{name}_%{unmangled_version}.tar.gz
+Source0: %{name}_%{version}.orig.tar.gz
 License: UNKNOWN
 Group: Development/Libraries
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
-BuildRequires: python,python-setuptools
+BuildRequires: python, python-setuptools
+Requires: python, python-ruote-amqp, python-amqplib, python-air
 BuildArch: noarch
 Vendor: David Greaves <david@dgreaves.com>
 Url: http://github.com/lbt/boss-python-skynet/
@@ -21,7 +22,7 @@ Url: http://github.com/lbt/boss-python-skynet/
 UNKNOWN
 
 %prep
-%setup -n %{name}-%{unmangled_version} -n %{name}-%{unmangled_version}
+%setup -n %{name}-%{version} -n %{name}-%{version}
 
 %build
 python setup.py build
@@ -34,4 +35,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-/usr/lib/python2.6/site-packages/SkyNET
+%{python_sitelib}/SkyNET
+%doc README
+%{_datadir}/doc/%{name}

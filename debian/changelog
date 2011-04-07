@@ -1,3 +1,15 @@
+python-boss-skynet (0.2-6) unstable; urgency=low
+
+  * Merge branches
+
+ -- David Greaves <david@dgreaves.com>  Thu, 07 Apr 2011 01:01:48 +0100
+
+python-boss-skynet (0.2-5) unstable; urgency=low
+
+  * Fix some lintian warnings.
+
+ -- Islam Amer <islam.amer@nokia.com>  Tue, 05 Apr 2011 14:39:33 +0300
+
 python-boss-skynet (0.2-4) unstable; urgency=low
 
   * Use /etc/skynet/skynet.conf as the default config file

@@ -112,7 +112,7 @@ class Exo(object):
 
 		# An ExoParticipant knows about the handler
 		self.p = ExoParticipant(exo=self,
-								ruote_queue=self.name,
+								ruote_queue=self.queue,
 								amqp_host=self.amqp_host,
 								amqp_user=self.amqp_user,
 								amqp_pass=self.amqp_pwd,
@@ -123,7 +123,7 @@ class Exo(object):
 		# Register with BOSS
 		# FIXME : This is going to be a process in it's own right.
 		print "Registered"
-		self.p.register(self.name, {'queue':self.name})
+		self.p.register(self.name, {'queue':self.queue})
 
 	def parse_config(self, config_file):
         config = ConfigParser.SafeConfigParser()
@@ -143,6 +143,13 @@ class Exo(object):
 				raise ParticipantConfigError(opt, section)
 			else:
 				self.__dict__[opt] = config.get(section, opt)
+
+		# If there's a queue, use it
+		if config.has_option(section, "queue"):
+			self.queue = config.get(section, "queue")
+		else:
+			self.queue = self.name
+			
 
 	# Signals and threads are tricky.
 	# Ensure that only the main thread sets the handler

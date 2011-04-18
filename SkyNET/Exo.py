@@ -10,6 +10,7 @@ try:
 except ImportError:
     import simplejson as json
 
+DEFAULT_SKYNET_CONFIG_DIR = "/etc/skynet/"
 DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
 
 if __name__ == "__main__":
@@ -129,6 +130,8 @@ class Exo(object):
         config = ConfigParser.SafeConfigParser()
         config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
 
+		self.config = config
+
 		# Validate the BOSS section options
 		section="boss"
 		for opt in ("amqp_vhost", "amqp_pwd", "amqp_user", "amqp_host"):
@@ -149,6 +152,9 @@ class Exo(object):
 			self.queue = config.get(section, "queue")
 		else:
 			self.queue = self.name
+
+		# Finally read "/etc/skynet/<pname>.conf", not caring if it exists
+		config.read([DEFAULT_SKYNET_CONFIG_DIR + name + ".conf"])
 			
 
 	# Signals and threads are tricky.
@@ -190,16 +196,26 @@ class Exo(object):
 				# hard.
 				#
 				# signal.siginterrupt(signal.SIGTERM, False)
+
+				msg = WorkItemCtrl("start")
+				msg.config = self.config
+				self.p.handle_lifecycle_control(msg)
 				self.p.run()
+
 			except KeyboardInterrupt:
 				sys.exit(0)
+
 			except IOError:
 				print "p.run() interrupted - IOError"
 				if self.graceful_shutdown:
 					print "Now shutting down"
+					self.p.handle_lifecycle_control(WorkItemCtrl("die"))
 					sys.exit(1)
+
 				print "Trying to shutdown gracefully"
+				self.p.handle_lifecycle_control(WorkItemCtrl("stop"))
 				self.graceful_shutdown=True
+
 			except Exception:
 				print "p.run() interrupted"
 				traceback.print_exc()

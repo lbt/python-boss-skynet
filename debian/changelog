@@ -1,3 +1,10 @@
+python-boss-skynet (0.2.1-1) unstable; urgency=low
+
+  * Adopt the ruby rational versioning policy
+  * support participant config in /etc/skynet/<name>.conf
+
+ -- David Greaves <david@dgreaves.com>  Wed, 20 Apr 2011 22:35:40 +0100
+
 python-boss-skynet (0.2-7) unstable; urgency=low
 
   * Use the config.exo queue attribute

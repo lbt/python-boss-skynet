@@ -4,6 +4,7 @@ import os, sys, traceback, imp, signal
 import ConfigParser
 from  RuoteAMQP.workitem import Workitem
 from  RuoteAMQP.participant import Participant
+from SkyNET.Control import WorkItemCtrl, ParticipantCtrl
 
 try:
     import json
@@ -127,8 +128,8 @@ class Exo(object):
 		self.p.register(self.name, {'queue':self.queue})
 
 	def parse_config(self, config_file):
-        config = ConfigParser.SafeConfigParser()
-        config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
+		config = ConfigParser.SafeConfigParser()
+		config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
 
 		self.config = config
 
@@ -140,7 +141,7 @@ class Exo(object):
 			else:
 				self.__dict__[opt] = config.get(section, opt)
 		# Make sure there is a participant name
-		section="participant"
+		section = "participant"
 		for opt in ("name", "code"):
 			if not config.has_option(section, opt):
 				raise ParticipantConfigError(opt, section)
@@ -154,7 +155,7 @@ class Exo(object):
 			self.queue = self.name
 
 		# Finally read "/etc/skynet/<pname>.conf", not caring if it exists
-		config.read([DEFAULT_SKYNET_CONFIG_DIR + name + ".conf"])
+		config.read([DEFAULT_SKYNET_CONFIG_DIR + self.name + ".conf"])
 			
 
 	# Signals and threads are tricky.
@@ -199,7 +200,7 @@ class Exo(object):
 
 				msg = WorkItemCtrl("start")
 				msg.config = self.config
-				self.p.handle_lifecycle_control(msg)
+				self.handler.handle_lifecycle_control(msg)
 				self.p.run()
 
 			except KeyboardInterrupt:
@@ -209,11 +210,11 @@ class Exo(object):
 				print "p.run() interrupted - IOError"
 				if self.graceful_shutdown:
 					print "Now shutting down"
-					self.p.handle_lifecycle_control(WorkItemCtrl("die"))
+					self.handler.handle_lifecycle_control(WorkItemCtrl("die"))
 					sys.exit(1)
 
 				print "Trying to shutdown gracefully"
-				self.p.handle_lifecycle_control(WorkItemCtrl("stop"))
+				self.handler.handle_lifecycle_control(WorkItemCtrl("stop"))
 				self.graceful_shutdown=True
 
 			except Exception:

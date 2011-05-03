@@ -1,3 +1,9 @@
+python-boss-skynet (0.2.2-2) unstable; urgency=low
+
+  * Tuple-triple confusion : now Depends on python-ruote-amqp >= 2.0.0
+
+ -- David Greaves <david@dgreaves.com>  Tue, 03 May 2011 16:37:56 +0100
+
 python-boss-skynet (0.2.2-1) unstable; urgency=low
 
   * Update to use property based python-ruote-amqp

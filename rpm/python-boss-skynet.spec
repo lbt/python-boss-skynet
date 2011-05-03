@@ -13,7 +13,7 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildRequires: python, python-setuptools
-Requires: python, python-ruote-amqp >=0.2.1, python-amqplib, python-air
+Requires: python, python-ruote-amqp >= 2.0.0, python-amqplib, python-air
 BuildArch: noarch
 Vendor: David Greaves <david@dgreaves.com>
 Url: http://github.com/lbt/boss-python-skynet/

@@ -1,6 +1,6 @@
 %define name python-boss-skynet
-%define version 0.2.1
-%define unmangled_version 0.2
+%define version 0.2.2
+%define unmangled_version 0.2.2
 %define release 1
 
 Summary: Boss Python SkyNET

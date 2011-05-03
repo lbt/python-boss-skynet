@@ -1,3 +1,10 @@
+python-boss-skynet (0.2.2-1) unstable; urgency=low
+
+  * Update to use property based python-ruote-amqp
+  * Depends on python-ruote-amqp >= 0.2.1
+
+ -- David Greaves <david@dgreaves.com>  Tue, 03 May 2011 01:46:40 +0100
+
 python-boss-skynet (0.2.1-1) unstable; urgency=low
 
   * Adopt the ruby rational versioning policy

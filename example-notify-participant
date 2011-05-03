@@ -26,13 +26,13 @@ class ParticipantHandler(object):
     def handle_wi(self, wi):
 
         # We may want to examine the fields structure
-        if 'debug_dump' in wi.fields():
-            print json.dumps(wi.to_h(), sort_keys=True, indent=4)
+        if wi.fields.debug_dump:
+            print wi.dump()
 
         # Some meaningless logic
-        if "contents" in wi.fields():
-            print "Send email saying : %s" % wi.fields()["contents"]
-            wi.set_result(True)
+        if wi.fields.contents:
+            print "Send email saying : %s" % wi.contents
+            wi.result = True
         else:
             print "Nothing to say"
-            wi.set_result(False)
+            wi.result = False

@@ -26,8 +26,8 @@ class ParticipantHandler(object):
     def handle_wi(self, wi):
 
         # We may want to examine the fields structure
-        if 'debug_dump' in wi.fields():
-            print json.dumps(wi.to_h(), sort_keys=True, indent=4)
+        if wi.fields.debug_dump:
+            print wi.dump()
 
         # Some meaningless logic
         fname="/tmp/success"
@@ -35,9 +35,9 @@ class ParticipantHandler(object):
         try:
             f = open(fname)
             contents = f.read(1024)
-            wi.fields()["contents"] = contents
+            wi.fields.contents = contents
             print "Read %s" % fname
-            wi.set_result(True)
+            wi.result = True
         except IOError:
             print "Failed to read %s" % fname
-            wi.set_result(False)
+            wi.result = False

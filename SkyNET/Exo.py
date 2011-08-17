@@ -25,12 +25,28 @@ class ParticipantConfigError(RuntimeError):
 			(opt, section))
 
 class ExoParticipant(Participant):
+	"""
+	This class runs the normal participant handling code.
+	In order to support some sophisticated Ruote usage it writes a closure
+	into the ParticipantHandler namespace called send_to_engine()
+	This closure invokes *this* objects send_to_engine() method and
+	uses that to call the super write_to_engine()
+	"""
 	def __init__(self, exo=None, *args, **kwargs):
 		super(ExoParticipant,self).__init__(*args, **kwargs)
 		self.exo=exo
+		# Write a closure into the ParticipantHandler namespace
+		self.exo.send_to_engine = lambda wi : self.send_to_engine(wi)
 
 	def consume(self):
 		self.exo.handler.handle_wi(self.workitem)
+
+	def send_to_engine(self, wi):
+		# ugh
+		tmp = self.workitem
+		self.workitem = wi
+		self.reply_to_engine()
+		self.workitem = tmp
 
 class Exo(object):
     """

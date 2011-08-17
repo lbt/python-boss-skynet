@@ -42,11 +42,7 @@ class ExoParticipant(Participant):
 		self.exo.handler.handle_wi(self.workitem)
 
 	def send_to_engine(self, wi):
-		# ugh
-		tmp = self.workitem
-		self.workitem = wi
-		self.reply_to_engine()
-		self.workitem = tmp
+		self.reply_to_engine(workitem=wi)
 
 class Exo(object):
     """

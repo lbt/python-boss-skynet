@@ -1,0 +1,116 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SkyNET.Control &mdash; BOSS/SkyNet python module v0.2.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="BOSS/SkyNet python module v0.2.2 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">BOSS/SkyNet python module v0.2.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for SkyNET.Control</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/python</span>
+<span class="c"># -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t -*-</span>
+
+<div class="viewcode-block" id="WorkItemCtrl"><a class="viewcode-back" href="../../control.html#SkyNET.Control.WorkItemCtrl">[docs]</a><span class="k">class</span> <span class="nc">WorkItemCtrl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Message object for workitems</span>
+<span class="sd">	Explicitly supports start(), stop() and die()</span>
+
+<span class="sd">	A ConfigParser is available in the config attribute of start()</span>
+<span class="sd">	messages</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">msg</span>
+
+<div class="viewcode-block" id="WorkItemCtrl.start"><a class="viewcode-back" href="../../control.html#SkyNET.Control.WorkItemCtrl.start">[docs]</a>	<span class="k">def</span> <span class="nf">start</span><span class="p">():</span> <span class="k">return</span> <span class="n">msg</span> <span class="o">==</span> <span class="s">&quot;start&quot;</span></div>
+<div class="viewcode-block" id="WorkItemCtrl.stop"><a class="viewcode-back" href="../../control.html#SkyNET.Control.WorkItemCtrl.stop">[docs]</a>	<span class="k">def</span> <span class="nf">stop</span><span class="p">():</span> <span class="k">return</span> <span class="n">msg</span> <span class="o">==</span> <span class="s">&quot;stop&quot;</span></div>
+<div class="viewcode-block" id="WorkItemCtrl.die"><a class="viewcode-back" href="../../control.html#SkyNET.Control.WorkItemCtrl.die">[docs]</a>	<span class="k">def</span> <span class="nf">die</span><span class="p">():</span> <span class="k">return</span> <span class="n">msg</span> <span class="o">==</span> <span class="s">&quot;die&quot;</span>
+
+</div></div>
+<div class="viewcode-block" id="ParticipantCtrl"><a class="viewcode-back" href="../../control.html#SkyNET.Control.ParticipantCtrl">[docs]</a><span class="k">class</span> <span class="nc">ParticipantCtrl</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Message object for participant control (startup, shutdown)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">BOSS/SkyNet python module v0.2.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Greaves.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

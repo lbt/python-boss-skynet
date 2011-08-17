@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SkyNET &mdash; BOSS/SkyNet python module v0.2.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="BOSS/SkyNet python module v0.2.2 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to BOSS/SkyNet python module’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to BOSS/SkyNet python module’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">BOSS/SkyNet python module v0.2.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-SkyNET.Exo">
+<span id="skynet"></span><h1>SkyNET<a class="headerlink" href="#module-SkyNET.Exo" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="SkyNET.Exo.Exo">
+<em class="property">class </em><tt class="descclassname">SkyNET.Exo.</tt><tt class="descname">Exo</tt><big>(</big><em>local_config_file=None</em><big>)</big><a class="reference internal" href="_modules/SkyNET/Exo.html#Exo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SkyNET.Exo.Exo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The Exo class provides the SkyNET participant exoskeleton.  This
+allows a consistent control framework to be applied to all BOSS
+participants. It requires a ParticipantHandler class to be provided in a
+dynamically imported python file. This class must provide the
+following interface:</p>
+<dl class="docutils">
+<dt>ParticipantHandler.handle_wi_control(WorkItemCtrl)</dt>
+<dd>This method is called with messages relating to the work being
+done and possibly from the process engine Typically this
+includes &#8220;cancel&#8221; and &#8220;status&#8221; messages.</dd>
+<dt>ParticipantHandler.handle_lifecycle_control(ParticipantCtrl)</dt>
+<dd>This method is called by SkyNET with messages relating to the
+Participant itself. Typically this includes &#8220;shutdown&#8221; type
+messages.</dd>
+</dl>
+<p>ParticipantHandler.handle_wi(Workitem)</p>
+<blockquote>
+<div><p>This replaces the old consume() method and passes in a Workitem;
+code like:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>def consume(self):</dt>
+<dd>wi = self.workitem
+...</dd>
+</dl>
+</div></blockquote>
+<p>is replaced by:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>def handle_wi(wi):</dt>
+<dd>...</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>The messages objects passed are obtained using:</dt>
+<dd>from SkyNET import (WorkItemCtrl, ParticipantCtrl, Workitem)</dd>
+</dl>
+<p>In SkyNET, Exo provides:</p>
+<p>Exo.WorkT : This thread is where work takes place and calls</p>
+<p>Exo.ControlT : This thread is where SkyNET control messages are handled</p>
+<p>Exo.BOSST : This thread is where BOSS control messages are handled</p>
+<p>Logging is done via stdout which is connected to a reliable
+logging service.</p>
+<dl class="method">
+<dt id="SkyNET.Exo.Exo.parse_config">
+<tt class="descname">parse_config</tt><big>(</big><em>config_file</em><big>)</big><a class="headerlink" href="#SkyNET.Exo.Exo.parse_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.Exo.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#SkyNET.Exo.Exo.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.Exo.sighandler">
+<tt class="descname">sighandler</tt><big>(</big><em>signum</em>, <em>frame</em><big>)</big><a class="headerlink" href="#SkyNET.Exo.Exo.sighandler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="SkyNET.Exo.ExoParticipant">
+<em class="property">class </em><tt class="descclassname">SkyNET.Exo.</tt><tt class="descname">ExoParticipant</tt><big>(</big><em>exo=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/SkyNET/Exo.html#ExoParticipant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SkyNET.Exo.ExoParticipant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">RuoteAMQP.participant.Participant</span></tt></p>
+<p>This class runs the normal participant handling code.
+In order to support some sophisticated Ruote usage it writes a closure
+into the ParticipantHandler namespace called send_to_engine()
+This closure invokes <em>this</em> objects send_to_engine() method and
+uses that to call the super write_to_engine()</p>
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.consume">
+<tt class="descname">consume</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/SkyNET/Exo.html#ExoParticipant.consume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.consume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.finish">
+<tt class="descname">finish</tt><big>(</big><big>)</big><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes channel and connection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.register">
+<tt class="descname">register</tt><big>(</big><em>name</em>, <em>options</em><big>)</big><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relies on the engine supporting the &#8220;engine_command&#8221;
+participant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.reply_to_engine">
+<tt class="descname">reply_to_engine</tt><big>(</big><big>)</big><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.reply_to_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>When the job is complete the workitem is passed back to the
+ruote engine.  The consume() method should set the
+workitem.result() if required.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Currently an infinite loop waiting for messages on the AMQP channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.send_to_engine">
+<tt class="descname">send_to_engine</tt><big>(</big><em>wi</em><big>)</big><a class="reference internal" href="_modules/SkyNET/Exo.html#ExoParticipant.send_to_engine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.send_to_engine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="SkyNET.Exo.ExoParticipant.workitem_callback">
+<tt class="descname">workitem_callback</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#SkyNET.Exo.ExoParticipant.workitem_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where a workitem message is handled</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="SkyNET.Exo.ParticipantConfigError">
+<em class="property">exception </em><tt class="descclassname">SkyNET.Exo.</tt><tt class="descname">ParticipantConfigError</tt><big>(</big><em>opt</em>, <em>section</em><big>)</big><a class="reference internal" href="_modules/SkyNET/Exo.html#ParticipantConfigError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SkyNET.Exo.ParticipantConfigError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.RuntimeError</span></tt></p>
+<dl class="attribute">
+<dt id="SkyNET.Exo.ParticipantConfigError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#SkyNET.Exo.ParticipantConfigError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="SkyNET.Exo.ParticipantConfigError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#SkyNET.Exo.ParticipantConfigError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to BOSS/SkyNet python module&#8217;s documentation!</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/skynet.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to BOSS/SkyNet python module’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">BOSS/SkyNet python module v0.2.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Greaves.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

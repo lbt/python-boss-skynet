@@ -1,3 +1,11 @@
+python-boss-skynet (0.3.0-1) unstable; urgency=low
+
+  * Sphinx documentation
+  * use new RuoteAMQP reply_to_engine() that takes a workitem keyword
+    parameter
+
+ -- Islam Amer <islam.amer@nokia.com>  Fri, 19 Aug 2011 02:35:36 +0300
+
 python-boss-skynet (0.2.2-2) unstable; urgency=low
 
   * Tuple-triple confusion : now Depends on python-ruote-amqp >= 2.0.0

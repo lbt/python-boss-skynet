@@ -1,11 +1,7 @@
-%define name python-boss-skynet
-%define version 0.3.0
-%define release 1
-
 Summary: Boss Python SkyNET
-Name: %{name}
-Version: %{version}
-Release: %{release}
+Name: python-boss-skynet
+Version: 0.3.0
+Release: 1
 Source0: %{name}_%{version}.orig.tar.gz
 License: UNKNOWN
 Group: Development/Libraries

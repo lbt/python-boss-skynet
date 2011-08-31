@@ -1,7 +1,7 @@
 Summary: Boss Python SkyNET
 Name: python-boss-skynet
 Version: 0.3.0
-Release: 1
+Release: 2
 Source0: %{name}_%{version}.orig.tar.gz
 License: UNKNOWN
 Group: Development/Libraries

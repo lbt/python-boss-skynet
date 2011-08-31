@@ -5,6 +5,7 @@ import ConfigParser
 from  RuoteAMQP.workitem import Workitem
 from  RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl, ParticipantCtrl
+import types
 
 try:
     import json
@@ -36,7 +37,9 @@ class ExoParticipant(Participant):
 		super(ExoParticipant,self).__init__(*args, **kwargs)
 		self.exo=exo
 		# Write a closure into the ParticipantHandler namespace
-		self.exo.send_to_engine = lambda wi : self.send_to_engine(wi)
+		self.exo.handler.send_to_engine = types.MethodType(
+				lambda orig_obj, wi : self.send_to_engine(wi),
+				self.exo.handler, self.exo.handler.__class__)
 
 	def consume(self):
 		self.exo.handler.handle_wi(self.workitem)

@@ -1,6 +1,7 @@
 python-boss-skynet (0.3.1-1) unstable; urgency=low
 
   * Handle participant shutdown more gracefully
+  * [uwe] fixed example-notify-participant 
 
  -- Pami Ketolainen <ext-pami.o.ketolainen@nokia.com>  Wed, 28 Sep 2011 18:16:58 +0300
 

@@ -31,7 +31,7 @@ class ParticipantHandler(object):
 
         # Some meaningless logic
         if wi.fields.contents:
-            print "Send email saying : %s" % wi.contents
+            print "Send email saying : %s" % wi.fields.contents
             wi.result = True
         else:
             print "Nothing to say"

@@ -1,22 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8; tab-width: 4 -*-
-import os, sys, traceback, imp, signal
+import sys, traceback, signal
 import ConfigParser
-from  RuoteAMQP.workitem import Workitem
 from  RuoteAMQP.participant import Participant
-from SkyNET.Control import WorkItemCtrl, ParticipantCtrl
+from SkyNET.Control import WorkItemCtrl
 import types
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 DEFAULT_SKYNET_CONFIG_DIR = "/etc/skynet/"
 DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
 
-if __name__ == "__main__":
-    main()
+class ParticipantHandlerNotDefined(RuntimeError):
+    def __init__(self):
+        super(ParticipantHandlerNotDefined, self).__init__(
+                "ParticipantHandler class not found")
+
+class InvalidParticipantHandlerSignature(RuntimeError):
+    pass
 
 class ParticipantConfigError(RuntimeError):
     def __init__(self, opt, section):
@@ -34,8 +33,8 @@ class ExoParticipant(Participant):
     uses that to call the super write_to_engine()
     """
     def __init__(self, exo=None, *args, **kwargs):
-        super(ExoParticipant,self).__init__(*args, **kwargs)
-        self.exo=exo
+        super(ExoParticipant, self).__init__(*args, **kwargs)
+        self.exo = exo
         # Write a closure into the ParticipantHandler namespace
         self.exo.handler.send_to_engine = types.MethodType(
                 lambda orig_obj, wi : self.send_to_engine(wi),
@@ -44,8 +43,8 @@ class ExoParticipant(Participant):
     def consume(self):
         self.exo.handler.handle_wi(self.workitem)
 
-    def send_to_engine(self, wi):
-        self.reply_to_engine(workitem=wi)
+    def send_to_engine(self, witem):
+        self.reply_to_engine(workitem=witem)
 
 class Exo(object):
     """
@@ -103,7 +102,10 @@ class Exo(object):
         Config information is read from the default location :
           /etc/skynet/skynet.conf
           which can be overridden by the 'local_config_file'
-          """
+        """
+        self.queue = self.amqp_host = self.amqp_user = self.amqp_pwd = \
+                self.amqp_vhost = self.code = self.name = self.config = \
+                self.graceful_shutdown = None
 
         self.parse_config(local_config_file)
 
@@ -113,19 +115,18 @@ class Exo(object):
         execfile(self.code, globals())
 
         # Create an I woinstance
-        print "name : %s \namqp_host: %s\namqp_user: %s\namqp_pass: %s\namqp_vhost: %s" % (
-            self.name, self.amqp_host, self.amqp_user,
-            self.amqp_pwd,  self.amqp_vhost)
+        for key in ("name", "amqp_host", "amqp_user", "amqp_pwd", "amqp_vhost"):
+            print "%s : %s" % (key, getattr(self, key, "???"))
 
         # Complain if there is no ParticipantHandler class
         try:
             self.handler = ParticipantHandler()
-        except NameError,e:
+        except NameError, exobj:
             raise ParticipantHandlerNotDefined()
-        except TypeError,e:
-            raise InvalidParticipantHandlerSignature()
-        except Exception,e:
-            raise e
+        except TypeError, exobj:
+            raise InvalidParticipantHandlerSignature(str(exobj))
+        except Exception, exobj:
+            raise exobj
 
         # An ExoParticipant knows about the handler
         self.p = ExoParticipant(exo=self,
@@ -149,19 +150,19 @@ class Exo(object):
         self.config = config
 
         # Validate the BOSS section options
-        section="boss"
+        section = "boss"
         for opt in ("amqp_vhost", "amqp_pwd", "amqp_user", "amqp_host"):
             if not config.has_option(section, opt):
                 raise ParticipantConfigError(opt, section)
             else:
-                self.__dict__[opt] = config.get(section, opt)
+                setattr(self, opt, config.get(section, opt))
         # Make sure there is a participant name
         section = "participant"
         for opt in ("name", "code"):
             if not config.has_option(section, opt):
                 raise ParticipantConfigError(opt, section)
             else:
-                self.__dict__[opt] = config.get(section, opt)
+                setattr(self, opt, config.get(section, opt))
 
         # If there's a queue, use it
         if config.has_option(section, "queue"):
@@ -181,12 +182,12 @@ class Exo(object):
     def sighandler(self, signum, frame):
         print "Caught signal", signum
         if signum == signal.SIGTERM:
-            self.graceful_shutdown=True
+            self.graceful_shutdown = True
         elif signum == signal.SIGSTOP:
             pass
         elif signum == signal.SIGHUP:
             pass
-        elif signum == signal.SIGALARM:
+        elif signum == signal.SIGALRM:
             pass
         elif signum == signal.SIGINT:
             pass
@@ -196,7 +197,7 @@ class Exo(object):
     def run(self):
         # Enter event loop with some trial at clean exit
 
-        self.graceful_shutdown=False
+        self.graceful_shutdown = False
         # while self.p.running
         while True:
             try:
@@ -230,7 +231,7 @@ class Exo(object):
 
                 print "Trying to shutdown gracefully"
                 self.handler.handle_lifecycle_control(WorkItemCtrl("stop"))
-                self.graceful_shutdown=True
+                self.graceful_shutdown = True
 
             except Exception:
                 print "p.run() interrupted"

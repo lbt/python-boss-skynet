@@ -1,21 +1,21 @@
 #!/usr/bin/python
-# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t -*-
+# -*- coding: utf-8; tab-width: 4 -*-
 
 class WorkItemCtrl(object):
     """
     Message object for workitems
-	Explicitly supports start(), stop() and die()
+    Explicitly supports start(), stop() and die()
 
-	A ConfigParser is available in the config attribute of start()
-	messages
+    A ConfigParser is available in the config attribute of start()
+    messages
 
     """
-	def __init__(self, msg):
-		self.message = msg
+    def __init__(self, msg):
+        self.message = msg
 
-	def start(): return msg == "start"
-	def stop(): return msg == "stop"
-	def die(): return msg == "die"
+    def start(): return msg == "start"
+    def stop(): return msg == "stop"
+    def die(): return msg == "die"
 
 
 class ParticipantCtrl:

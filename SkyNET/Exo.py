@@ -182,6 +182,7 @@ class Exo(object):
     def sighandler(self, signum, frame):
         print "Caught signal", signum
         if signum == signal.SIGTERM:
+            self.p.finish()
             self.graceful_shutdown = True
         elif signum == signal.SIGSTOP:
             pass

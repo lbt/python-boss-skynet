@@ -138,11 +138,6 @@ class Exo(object):
 
         # FIXME : check for the mandatory methods
 
-        # Register with BOSS
-        # FIXME : This is going to be a process in it's own right.
-        print "Registered"
-        self.p.register(self.name, {'queue':self.queue})
-
     def parse_config(self, config_file):
         config = ConfigParser.SafeConfigParser()
         config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
@@ -219,6 +214,8 @@ class Exo(object):
                 msg.config = self.config
                 self.handler.handle_lifecycle_control(msg)
                 self.p.run()
+                if self.graceful_shutdown:
+                    break
 
             except KeyboardInterrupt:
                 sys.exit(0)

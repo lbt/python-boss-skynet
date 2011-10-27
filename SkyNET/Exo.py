@@ -41,6 +41,16 @@ class ExoParticipant(Participant):
                 self.exo.handler, self.exo.handler.__class__)
 
     def consume(self):
+        """Workitem consumer.
+
+        This method calls the ParticipantHandler.handle_wi() method.
+
+        It also handles the following common tasks:
+
+          * If workitem.fields.debug_dump or workitem.params.debug_dump is
+            defined, workitem is dumped to participant log
+
+        """
         if self.workitem.fields.debug_dump or self.workitem.params.debug_dump:
             print self.workitem.dump()
         self.exo.handler.handle_wi(self.workitem)

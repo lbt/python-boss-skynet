@@ -41,6 +41,8 @@ class ExoParticipant(Participant):
                 self.exo.handler, self.exo.handler.__class__)
 
     def consume(self):
+        if self.workitem.fields.debug_dump or self.workitem.params.debug_dump:
+            print self.workitem.dump()
         self.exo.handler.handle_wi(self.workitem)
 
     def send_to_engine(self, witem):

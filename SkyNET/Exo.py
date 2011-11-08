@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8; tab-width: 4 -*-
-import sys, traceback, signal
+import os, sys, traceback, signal
 import ConfigParser
 from  RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
@@ -18,11 +18,10 @@ class InvalidParticipantHandlerSignature(RuntimeError):
     pass
 
 class ParticipantConfigError(RuntimeError):
-    def __init__(self, opt, section):
-        super(ParticipantConfigError,
-              self).__init__(
-            "No option '%s' provided in section '%s' of any config files." %
-            (opt, section))
+    def __init__(self, opt, section, reason="missing"):
+        super(ParticipantConfigError, self).__init__(
+            "Option '%s' for section '%s' is %s" %
+            (opt, section, reason))
 
 class ExoParticipant(Participant):
     """
@@ -116,15 +115,16 @@ class Exo(object):
           which can be overridden by the 'local_config_file'
         """
         self.queue = self.amqp_host = self.amqp_user = self.amqp_pwd = \
-                self.amqp_vhost = self.code = self.name = self.config = \
-                self.graceful_shutdown = None
+                self.amqp_vhost = self.code = self.codepath = self.name = \
+                self.config = self.graceful_shutdown = None
 
         self.parse_config(local_config_file)
 
         # Dynamically load the user code.
         # We are running as a normal user anyway at this point
         # Don't catch any errors here.
-        execfile(self.code, globals())
+        sys.path.insert(0, self.codepath)
+        p_namespace = __import__(self.code)
 
         # Create an I woinstance
         for key in ("name", "amqp_host", "amqp_user", "amqp_pwd", "amqp_vhost"):
@@ -132,7 +132,7 @@ class Exo(object):
 
         # Complain if there is no ParticipantHandler class
         try:
-            self.handler = ParticipantHandler()
+            self.handler = p_namespace.ParticipantHandler()
         except NameError, exobj:
             raise ParticipantHandlerNotDefined()
         except TypeError, exobj:
@@ -163,19 +163,29 @@ class Exo(object):
                 raise ParticipantConfigError(opt, section)
             else:
                 setattr(self, opt, config.get(section, opt))
-        # Make sure there is a participant name
-        section = "participant"
-        for opt in ("name", "code"):
-            if not config.has_option(section, opt):
-                raise ParticipantConfigError(opt, section)
-            else:
-                setattr(self, opt, config.get(section, opt))
 
-        # If there's a queue, use it
-        if config.has_option(section, "queue"):
-            self.queue = config.get(section, "queue")
-        else:
+        # Get participant config
+        section = "participant"
+        for opt in ("name", "queue", "code"):
+            if config.has_option(section, opt):
+                setattr(self, opt, config.get(section, opt))
+        # Make sure we have name
+        if not self.name:
+            raise ParticipantConfigError("name", section)
+        # If there's no queue, use participant name
+        if not self.queue:
             self.queue = self.name
+
+        # if code is not given expect participant_logic in cwd
+        if not self.code:
+            self.code = "participant_logic.py"
+
+        # convert the code to path and module name
+        self.codepath, self.code = os.path.split(os.path.abspath(self.code))
+        self.code, _, ext = self.code.partition(".")
+        if not ext == "py":
+            raise ParticipantConfigError("code", section,
+                "invalid: Not a .py file")
 
         # Finally read "/etc/skynet/<pname>.conf", not caring if it exists
         config.read([DEFAULT_SKYNET_CONFIG_DIR + self.name + ".conf"])

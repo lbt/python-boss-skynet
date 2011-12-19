@@ -23,6 +23,26 @@ class ParticipantConfigError(RuntimeError):
             "Option '%s' for section '%s' is %s" %
             (opt, section, reason))
 
+def workitem_summary(wid):
+    parts = ["Taking workitem"]
+    if wid.fields.ev and wid.fields.ev.id:
+        parts.append("#%s" % wid.fields.ev.id)
+    if wid.fields.project:
+        parts.append("for %s" % wid.fields.project)
+    # Put a colon after whatever we got so far
+    parts = [' '.join(parts) + ":"]
+    if wid.participant_name:
+        parts.append(wid.participant_name)
+    if wid.params:
+        for key, value in wid.params.as_dict().items():
+            # Remove some uninteresting parameters from the log
+            if key in ['participant_options', 'if']:
+                continue
+            if key == 'ref' and wid.participant_name:
+                continue
+            parts.append("%s=%s" % (key, repr(value)))
+    return ' '.join(parts)
+
 class ExoParticipant(Participant):
     """
     This class runs the normal participant handling code.
@@ -50,6 +70,8 @@ class ExoParticipant(Participant):
             defined, workitem is dumped to participant log
 
         """
+        if self.workitem.fields.debug_trace:
+            print workitem_summary(self.workitem)
         if self.workitem.fields.debug_dump or self.workitem.params.debug_dump:
             print self.workitem.dump()
         self.exo.handler.handle_wi(self.workitem)

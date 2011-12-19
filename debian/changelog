@@ -1,3 +1,9 @@
+python-boss-skynet (0.5.0-1) unstable; urgency=low
+
+  * Trace logging: emit one log line per workitem in Exo.consume()
+
+ -- Richard Braakman <ext-richard.braakman@nokia.com>  Mon, 19 Dec 2011 11:02:34 +0200
+
 python-boss-skynet (0.4.1-1) unstable; urgency=low
 
   * Import participant code instead of execfile (PMO#288873)

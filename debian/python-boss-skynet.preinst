@@ -1,0 +1,25 @@
+#! /bin/sh
+
+set -e
+
+STOP_BEFORE="0.6.0"
+
+if [ "$1" = "upgrade" ]; then
+  if [ "$2" ]; then
+    if dpkg --compare-versions "$2" "<<" "$STOP_BEFORE"; then
+      # Upgrade from daemontools based version
+      SERVICE_DIR=/var/lib/SkyNET/services/
+      STORAGE_DIR=/var/lib/SkyNET/store/
+      [ -f /etc/default/boss-skynet ] && . /etc/default/boss-skynet
+      echo "stopping daemontools controlled participants ... this may take a while ..."
+      for PART in $(find ${SERVICE_DIR} -type l); do
+        rm $PART
+        svc -dx ${STORAGE_DIR}/$(basename $PART)
+        sleep 2
+        svc -dx ${STORAGE_DIR}/$(basename $PART)/log
+      done
+    fi
+  fi 
+fi
+
+#DEBHELPER#

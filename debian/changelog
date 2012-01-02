@@ -1,3 +1,9 @@
+python-boss-skynet (0.6.0-1) unstable; urgency=low
+
+  * New supervisor based boss-skynet merged into python-boss-skynet
+
+ -- Islam Amer <islam.amer@nokia.com>  Tue, 03 Jan 2012 22:15:51 +0200
+
 python-boss-skynet (0.5.0-1) unstable; urgency=low
 
   * Trace logging: emit one log line per workitem in Exo.consume()

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8; tab-width: 4 -*-
-import os, sys, traceback, signal
+import os, sys, glob, traceback, signal
 import ConfigParser
 from  RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
@@ -175,6 +175,14 @@ class Exo(object):
     def parse_config(self, config_file):
         config = ConfigParser.SafeConfigParser()
         config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
+        if config.has_option("skynet", "include_dir"):
+            if os.path.exists(config.get("skynet", "include_dir")):
+                for filename in glob.glob("%s/*.conf" % config.get("skynet",
+                                                            "include_dir")):
+                    try:
+                        config.read(filename)
+                    except ConfigParser.ParsingError, why:
+                        print ValueError(str(why))
 
         self.config = config
 

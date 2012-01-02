@@ -1,0 +1,35 @@
+#! /bin/bash
+
+set -e
+
+# Update this when changes require rebuild
+REBUILD_BEFORE="0.6.0"
+
+if [ "$1" = "configure" ]; then
+    if [ ! "$2" ]; then
+	    # First time installation
+	    # Create a system user
+	    adduser --quiet --system --group skynet
+
+    elif dpkg --compare-versions "$2" "<<" "$REBUILD_BEFORE"; then
+	    # Upgrade from daemontools based version to supervisor based version
+        for PART in $(find /var/lib/SkyNET/store -maxdepth 2 -name config.exo); do
+            code=$(awk -F "=" '/^code/ {print $2}' ${PART})
+            name=$(awk -F "=" '/^name/ {print $2}' ${PART})
+            queue=$(awk -F "=" '/^queue/ {print $2}' ${PART})
+            runas=$(awk -F "=" '/^runas/ {print $2}' ${PART})
+            regexp=$(awk -F "=" '/^regexp/ {print $2}' ${PART})
+            if ! grep -R -q $code /etc/supervisor/conf.d/ ; then
+                skynet install -u $runas -r $regexp -q $queue -n $name $code
+            fi
+            sed -i -e '/user_managed/d' /etc/supervisor/conf.d/*
+        done
+
+    else
+        # Upgrade from supervisord based version
+	    skynet rebuild --all || true
+        skynet apply || true
+    fi
+fi
+
+#DEBHELPER#

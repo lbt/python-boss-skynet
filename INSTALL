@@ -1,0 +1,41 @@
+Ensure Rabbit MQ is running
+
+The shipped configuration assumes it is running on localhost and has
+the following simple setup:
+
+rabbitmqctl add_vhost boss
+rabbitmqctl add_user boss boss
+rabbitmqctl set_permissions -p boss boss '.*' '.*' '.*'
+
+On the skynet machine we need to setup some code as a participant:
+  skynet make_participant -n check -p /usr/share/doc/python-boss-skynet/example-check-participant
+  skynet make_participant -n notify -p /usr/share/doc/python-boss-skynet/example-notify-participant
+
+The code for these paricipants is in /usr/share/doc/python-boss-skynet/
+
+Now we need to ensure it runs (and restarts if there's a crash):
+  skynet enable check
+  skynet enable notify
+
+To watch the log output:
+  skynet log check &
+  skynet log notify &
+
+Now we need to tell boss that there is something listening on these
+queues and available for use in processes:
+  skynet register -n check
+  skynet register -n notify
+
+
+Launch a process
+
+With a participant ready to do some work, we're ready to launch a process:
+  /usr/share/doc/boss/skynet_launch
+
+Now do:
+  echo Hi there > /tmp/success
+
+And relaunch:
+  /usr/share/doc/boss/skynet_launch
+
+The process can be launched from anywhere 

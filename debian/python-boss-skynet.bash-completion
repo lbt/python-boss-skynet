@@ -1,0 +1,40 @@
+_skynet()
+{
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    opts="enable disable start stop reload manual rebuild status log install uninstall register unregister list"
+
+    participants_all="$(skynet list --all)"
+    participants_en="$(skynet list --enabled)"
+    participants_dis="$(skynet list --disabled)"
+
+    case "${prev}" in
+	enable|start|manual)
+	    COMPREPLY=( $(compgen -W "${participants_dis}" -- ${cur}) )
+            return 0
+            ;;
+	disable|stop)
+	    COMPREPLY=( $(compgen -W "${participants_en}" -- ${cur}) )
+            return 0
+            ;;
+	reload)
+	    COMPREPLY=( $(compgen -W "--all ${participants_en}" -- ${cur}) )
+	    return 0
+	    ;;
+	rebuild|status|log|uninstall|register|unregister)
+	    COMPREPLY=( $(compgen -W "${participants_all}" -- ${cur}) )
+            return 0
+            ;;
+	list)
+	    COMPREPLY=( $(compgen -W "--all --enabled" -- ${cur}) )
+            return 0
+            ;;
+    esac
+
+    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+
+}
+complete -F _skynet skynet

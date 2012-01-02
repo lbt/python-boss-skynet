@@ -2,13 +2,17 @@ Source: python-boss-skynet
 Maintainer: David Greaves <david@dgreaves.com>
 Section: python
 Priority: optional
-Build-Depends: python-setuptools (>= 0.6b3), debhelper (>= 7), python-support (>= 0.8.4)
-Standards-Version: 3.9.1
+Build-Depends: python (>= 2.6.0), python-setuptools (>= 0.6b3), debhelper (>= 7.0.50~), python-support (>= 0.8.4), python-sphinx, bash-completion
+Standards-Version: 3.9.2
 Homepage: http://wiki.meego.com/Release_Infrastructure/BOSS/SkyNET
 Vcs-Git: git://gitorious.org/meego-infrastructure-tools/boss-python-skynet.git
 Vcs-Browser: http://meego.gitorious.org/meego-infrastructure-tools/boss-python-skynet
 
 Package: python-boss-skynet
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp (>= 2.1.0)
-Description: SkyNET for BOSS
+Depends: ${misc:Depends}, ${python:Depends}, python-ruote-amqp (>= 2.1.0), supervisor, python-setproctitle, adduser
+Replaces: boss-skynet
+Conflicts: boss-skynet (<< 0.6.0)
+Description: SkyNET Participant manager for BOSS
+ The BOSS participant manager. Starts and stops participants and
+ provides a simple mechanism to install them

@@ -2,7 +2,7 @@
 
 """ skynet script is a convenience wrapper around supervisor """
 
-import sys, os, time, glob
+import sys, os, time, glob, errno, shutil
 import xmlrpclib
 from optparse import OptionParser, make_option
 from ConfigParser import ConfigParser, SafeConfigParser
@@ -458,11 +458,12 @@ def do_wait(argv):
                 elif (proc["statename"] == opts.state
                   and proc["name"] not in failed_procs
                   and not proc["name"] in transitioned_procs):
-                        print "Participant instance %s %s" % ( proc["name"], opts.state )
-                        transitioned_procs.add(proc["name"])
+                    print "Participant instance %s %s" % ( proc["name"],
+                                                           opts.state)
+                    transitioned_procs.add(proc["name"])
                 elif proc["statename"] != opts.state \
                      and proc["name"] not in failed_procs:
-                     all_transitioned = False
+                    all_transitioned = False
 
         time.sleep(1)
 
@@ -473,20 +474,18 @@ def do_wait(argv):
         print "waited too long"
 
 def start_thread(name, wait):
+    """ start process thread """
     get_svp().supervisor.startProcess(name, wait)
 
 def stop_thread(name, wait):
+    """ stop process thread """
     get_svp().supervisor.stopProcess(name, wait)
 
-def toggle_start_stop(argv, usage, description, wait_for_state, statename):
+def toggle_start_stop(argv, usage, description, wait_for_state):
 
     """ START or STOP some participants """
 
-    aopts = [make_option("--no-wait", default=True,
-             action="store_false", dest="wait")]
-
-    opts, args = default_oparser(argv, usage, description, \
-                              additional_options = aopts)
+    opts, args = default_oparser(argv, usage, description)
 
     pgroups = set(args)
 
@@ -494,6 +493,7 @@ def toggle_start_stop(argv, usage, description, wait_for_state, statename):
 
     proc_names = []
     group_names = set([])
+    threads = []
     for proc in get_participants_status():
         if not proc["statename"] == wait_for_state:
             if (proc["group"] in pgroups or opts.all
@@ -502,36 +502,44 @@ def toggle_start_stop(argv, usage, description, wait_for_state, statename):
                 group_names.add(proc["group"])
 
                 if wait_for_state in get_stopped_states():
-                    t = Thread(target=stop_thread, args=(full_name(proc), False))
-                    t.start()
+                    thr = Thread(target=stop_thread, args=(full_name(proc),
+                                 False))
                 elif wait_for_state in get_running_states():
-                    t = Thread(target=start_thread, args=(full_name(proc), False))
-                    t.start()
+                    thr = Thread(target=start_thread, args=(full_name(proc),
+                                 False))
 
-    if opts.wait:
-        group_names = list(group_names)
-        if group_names:
-            group_names.insert(0, "--state=%s" % wait_for_state)
-            do_wait(group_names)
+                thr.start()
+                threads.append(thr)
+
+    for thr in threads:
+        thr.join()
+
+    group_names = list(group_names)
+    if group_names:
+        group_names.insert(0, "--state=%s" % wait_for_state)
+        do_wait(group_names)
+    else:
+        print "nothing %s" % wait_for_state
+        sys.exit(1) 
 
 def do_stop(argv):
 
     """ stop subcommand handler """
 
-    usage = "%prog stop [--all] [--no-wait] participant.."
+    usage = "%prog stop [--all] participant.."
     description = "If a participant is running it will be stopped."\
                   "It will be restarted on reboot."
 
-    toggle_start_stop(argv, usage, description, "STOPPED", "stop")
+    toggle_start_stop(argv, usage, description, "STOPPED")
 
 def do_start(argv):
 
     """ start subcommand handler """
 
-    usage = "%prog start [--all] [--no-wait] participant.."
+    usage = "%prog start [--all] participant.."
     description = "Participant will be started if it is not running."
 
-    toggle_start_stop(argv, usage, description, "RUNNING", "start")
+    toggle_start_stop(argv, usage, description, "RUNNING")
 
 def toggle_enable_disable(opts, args, toggle_name, toggle_to):
 
@@ -597,21 +605,14 @@ def do_reload(argv):
 
     """ reload subcommand handler """
 
-    usage = "%prog reload [--all] [--no-wait] participant.."
+    usage = "%prog reload [--all] participant.."
     description = "Cycles the running participant to reload the code."\
             "This is normaly done when participant or skynet python wrapper"\
             "is upgraded."
 
-    aopts = [make_option("--no-wait", default=True,
-             action="store_false", dest="wait")]
-
-    opts, _ = default_oparser(argv, usage, description, \
-                              additional_options = aopts)
-
+    _, _ = default_oparser(argv, usage, description)
+ 
     do_stop(argv)
-    # give supervisord some time to process the multicall
-    if not opts.wait:
-        time.sleep(2)
     do_start(argv)
 
 def do_list(argv):
@@ -718,6 +719,40 @@ def do_rebuild(argv):
                       ]
         do_install(fake_args)
 
+def add_include_dir():
+
+    """ adds the needed include dir to supervisor config """
+
+    server_conf = ConfigParser()
+    server_conf.read(get_server_conf().configfile)
+    sv_dir = get_sv_dir()
+
+    changed = False
+    if not server_conf.has_section("include"):
+        server_conf.add_section("include")
+        changed = True
+    if not server_conf.has_option("include", "files"):
+        server_conf.set("include", "files", "%s/*.conf" % sv_dir)
+        changed = True
+    else:
+        files = server_conf.get("include", "files")
+        files = files.split()
+        sv_dir_glob = "%s/*.conf" % sv_dir
+        if not sv_dir_glob in files:
+            files.append(sv_dir_glob)
+            server_conf.set("include", "files", " ".join(files))
+            changed = True
+
+    if changed:
+        oldfile = "%s.old" % get_server_conf().configfile
+        if not os.path.exists(oldfile):
+            shutil.copyfile(get_server_conf().configfile,
+                            oldfile)
+
+        with open(get_server_conf().configfile, 'wb') as config_fp:
+            server_conf.write(config_fp)
+
+
 def do_apply(argv):
 
     """ apply subcommand handler """
@@ -726,6 +761,9 @@ def do_apply(argv):
     description = "Reload config and update/add/remove as necessary"
 
     default_oparser(argv, usage, description, add_all=False)
+
+    add_include_dir()
+
     svp = get_svp()
 
     try:
@@ -836,7 +874,11 @@ def main():
     try:
         subcmd_dispatcher()
     except EnvironmentError as exc:
-        if exc.filename:
+        if exc[0] == errno.ECONNREFUSED or exc[0] == errno.ENOENT:
+            print 'ERROR: is supervisord running ?'
+            sys.exit(1)
+
+        elif exc.filename:
             exc_str = "{0}({1}): {2} {3}".format(exc.__class__.__name__, \
                                                  exc.errno, exc.filename, \
                                                  exc.strerror)
@@ -848,7 +890,8 @@ def main():
             exc_str = "{0}: {1}".format(exc.__class__.__name__, str(exc))
 
 
-        exc_str = exc_str + ", you probably need root"
+        if not os.getuid() == 0:
+            exc_str = exc_str + ", and you are not root"
         print exc_str
         sys.exit(1)
 

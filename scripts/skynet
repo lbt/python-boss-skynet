@@ -453,13 +453,12 @@ def do_wait(argv):
             if proc["group"] in argv:
                 if proc["statename"] in ["BACKOFF", "FATAL"]:
                     if not proc["name"] in failed_procs:
-                        print "Participant instance %s failed" % proc["name"]
+                        print "%s FAILED" % proc["name"].ljust(40)
                         failed_procs.add(proc["name"])
                 elif (proc["statename"] == opts.state
                   and proc["name"] not in failed_procs
                   and not proc["name"] in transitioned_procs):
-                    print "Participant instance %s %s" % ( proc["name"],
-                                                           opts.state)
+                    print "%s %s" % ( proc["name"].ljust(40), opts.state)
                     transitioned_procs.add(proc["name"])
                 elif proc["statename"] != opts.state \
                      and proc["name"] not in failed_procs:
@@ -495,18 +494,22 @@ def toggle_start_stop(argv, usage, description, wait_for_state):
     group_names = set([])
     threads = []
     for proc in get_participants_status():
-        if not proc["statename"] == wait_for_state:
-            if (proc["group"] in pgroups or opts.all
-                and not proc["name"] in proc_names):
+        if (proc["group"] in pgroups or opts.all
+            and not proc["name"] in proc_names):
+
+            thr = False
+
+            if ( wait_for_state in get_stopped_states()
+                 and proc["statename"] not in get_stopped_states() ):
+                thr = Thread(target=stop_thread, args=(full_name(proc),
+                             False))
+            elif ( wait_for_state in get_running_states()
+                   and proc["statename"] not in get_running_states() ):
+                thr = Thread(target=start_thread, args=(full_name(proc),
+                             False))
+            if thr:
                 proc_names.append(proc["name"])
                 group_names.add(proc["group"])
-
-                if wait_for_state in get_stopped_states():
-                    thr = Thread(target=stop_thread, args=(full_name(proc),
-                                 False))
-                elif wait_for_state in get_running_states():
-                    thr = Thread(target=start_thread, args=(full_name(proc),
-                                 False))
 
                 thr.start()
                 threads.append(thr)
@@ -623,7 +626,13 @@ def do_list(argv):
     description = "default lists all participants with a * by enabled ones."
 
     aopts = [make_option("--enabled", default=False,
-             action="store_true", dest="enabled")]
+             action="store_true", dest="enabled"),
+             make_option("--disabled", default=False,
+             action="store_true", dest="disabled")
+             ]
+
+    if not argv:
+        argv.append("*")
 
     opts, _ = default_oparser(argv, usage, description, \
                               additional_options = aopts)
@@ -633,15 +642,17 @@ def do_list(argv):
         sys.exit(1)
 
     for proc in get_participants_status():
-        if opts.enabled and proc["statename"] == "STOPPED":
-            continue
-        elif opts.enabled or opts.all:
-            print "%s" % proc["name"]
-        else:
+        name , number = proc["name"].rsplit("_", 1)
+        if number == "0": number = " "
+        if (opts.all
+            or (opts.enabled and proc["statename"] in get_running_states())
+            or (opts.disabled and proc["statename"] in get_stopped_states())):
+            print "%s %s" % (name.ljust(40), number)
+        elif not opts.all and not opts.enabled and not opts.disabled:
             prefix = " "
-            if not proc["statename"] == "STOPPED":
+            if proc["statename"] in get_running_states():
                 prefix = "*"
-            print "%s %s" % (prefix, proc["name"])
+            print "%s %s %s" % (prefix, name.ljust(40), number)
 
 
 def do_status(argv):
@@ -651,12 +662,17 @@ def do_status(argv):
     usage = "%prog status [--all] [program_name...]"
     description = "List status of all managed participant instances"
 
+    if not argv:
+        argv.append("--all")
+
     _, args = default_oparser(argv, usage, description)
 
     for proc in get_participants_status():
         if args and not proc["group"] in args:
             continue
-        print "%s %s" % (proc["name"].ljust(25), proc["statename"])
+        name , number = proc["name"].rsplit("_", 1)
+        if number == "0": number = " "
+        print "%s %s %s" % (name.ljust(40), number, proc["statename"])
 
 def do_manual(argv):
 

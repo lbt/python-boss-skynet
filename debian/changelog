@@ -1,3 +1,9 @@
+python-boss-skynet (0.6.1-1) unstable; urgency=low
+
+  * Various fixes and enhancements 
+
+ -- Islam Amer <islam.amer@nokia.com>  Tue, 10 Jan 2012 02:10:39 +0200
+
 python-boss-skynet (0.6.0-1) unstable; urgency=low
 
   * New supervisor based boss-skynet merged into python-boss-skynet

@@ -1,6 +1,6 @@
 Summary: Boss Python SkyNET
 Name: python-boss-skynet
-Version: 0.6.1
+Version: 0.6.2
 Release: 1
 Source0: %{name}_%{version}.orig.tar.gz
 License: UNKNOWN
@@ -9,8 +9,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 Obsoletes: boss-skynet < 0.6.0
 Provides: boss-skynet
-BuildRequires: python, python-setuptools
-Requires: python, python-ruote-amqp >= 2.1.0, python-amqplib, supervisor, python-setproctitle, supervisor
+BuildRequires: python, python-distribute, supervisor
+Requires: python, python-ruote-amqp >= 2.1.0, python-amqplib, supervisor, python-setproctitle
 Requires(post): pwdutils
 BuildArch: noarch
 Vendor: David Greaves <david@dgreaves.com>
@@ -27,6 +27,7 @@ make
 
 %install
 make PREFIX=%{_prefix} DESTDIR=%{buildroot} install
+mkdir -p %{buildroot}/var/log/supervisor
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -50,6 +51,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %post
+
+chkconfig supervisord on || true
+service supervisord start || true
 
 if [ $1 -eq 1 ]; then
     if ! grep "skynet" /etc/passwd; then
@@ -90,3 +94,4 @@ fi
 %config(noreplace) %{_sysconfdir}/skynet/skynet.conf
 %config(noreplace) %{_sysconfdir}/skynet/skynet.env
 %{_sysconfdir}/skynet
+%dir /var/log/supervisor

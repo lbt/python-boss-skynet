@@ -5,6 +5,9 @@ import ConfigParser
 from  RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
 import types
+import logging
+
+logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', level=logging.INFO)
 
 DEFAULT_SKYNET_CONFIG_DIR = "/etc/skynet/"
 DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
@@ -71,9 +74,9 @@ class ExoParticipant(Participant):
 
         """
         if self.workitem.fields.debug_trace:
-            print workitem_summary(self.workitem)
+            self.exo.handler.log.info(workitem_summary(self.workitem))
         if self.workitem.fields.debug_dump or self.workitem.params.debug_dump:
-            print self.workitem.dump()
+            self.exo.handler.log.info(self.workitem.dump())
         self.exo.handler.handle_wi(self.workitem)
 
     def send_to_engine(self, witem):
@@ -136,6 +139,8 @@ class Exo(object):
           /etc/skynet/skynet.conf
           which can be overridden by the 'local_config_file'
         """
+        self.log = logging.getLogger("Exo")
+
         self.queue = self.amqp_host = self.amqp_user = self.amqp_pwd = \
                 self.amqp_vhost = self.code = self.codepath = self.name = \
                 self.config = self.graceful_shutdown = None
@@ -150,7 +155,7 @@ class Exo(object):
 
         # Create an I woinstance
         for key in ("name", "amqp_host", "amqp_user", "amqp_pwd", "amqp_vhost"):
-            print "%s : %s" % (key, getattr(self, key, "???"))
+            self.log.debug("%s : %s" % (key, getattr(self, key, "???")))
 
         # Complain if there is no ParticipantHandler class
         try:
@@ -162,6 +167,7 @@ class Exo(object):
         except Exception, exobj:
             raise exobj
 
+        self.handler.log = self.log
         # An ExoParticipant knows about the handler
         self.p = ExoParticipant(exo=self,
                                 ruote_queue=self.queue,
@@ -182,7 +188,12 @@ class Exo(object):
                     try:
                         config.read(filename)
                     except ConfigParser.ParsingError, why:
-                        print ValueError(str(why))
+                        self.log.exception(ValueError(str(why)))
+        if config.has_option("skynet", "log_level"):
+            try:
+                self.log.setLevel(config.get("skynet", "log_level"))
+            except ValueError, why:
+                self.log.exception(ValueError(str(why)))
 
         self.config = config
 
@@ -202,6 +213,8 @@ class Exo(object):
         # Make sure we have name
         if not self.name:
             raise ParticipantConfigError("name", section)
+        self.log.name = self.name
+
         # If there's no queue, use participant name
         if not self.queue:
             self.queue = self.name
@@ -227,7 +240,7 @@ class Exo(object):
     # FIXME: We should see if Pika can catch Interrupted system call
 
     def sighandler(self, signum, frame):
-        print "Caught signal", signum
+        self.log.debug("Caught signal %s", signum)
         if signum == signal.SIGTERM:
             self.p.finish()
             self.graceful_shutdown = True
@@ -262,6 +275,7 @@ class Exo(object):
                 #
                 # signal.siginterrupt(signal.SIGTERM, False)
 
+                self.log.info("Now starting")
                 msg = WorkItemCtrl("start")
                 msg.config = self.config
                 self.handler.handle_lifecycle_control(msg)
@@ -270,20 +284,23 @@ class Exo(object):
                     break
 
             except KeyboardInterrupt:
+                logging.shutdown()
                 sys.exit(0)
 
             except IOError:
-                print "p.run() interrupted - IOError"
+                self.log.debug("p.run() interrupted - IOError")
                 if self.graceful_shutdown:
-                    print "Now shutting down"
+                    self.log.info("Now shutting down")
                     self.handler.handle_lifecycle_control(WorkItemCtrl("die"))
+                    logging.shutdown()
                     sys.exit(1)
 
-                print "Trying to shutdown gracefully"
+                self.log.info("Trying to shutdown gracefully")
                 self.handler.handle_lifecycle_control(WorkItemCtrl("stop"))
                 self.graceful_shutdown = True
 
             except Exception:
-                print "p.run() interrupted"
+                self.log.debug("p.run() interrupted")
                 traceback.print_exc()
+                logging.shutdown()
                 sys.exit(1)

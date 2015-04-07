@@ -11,11 +11,11 @@ setup(name='python-boss-skynet',
       packages=['SkyNET',],
       requires=['RuoteAMQP',],
       scripts=['scripts/skynet', 'scripts/skynet_exo'],
-      data_files=[('/usr/share/doc/python-boss-skynet',
+      data_files=[('usr/share/doc/python-boss-skynet',
                     ['examples/example-check-participant',
                      'examples/example-notify-participant',
                      'examples/minimal-participant',
                      'README','INSTALL']),
-                  ('/etc/skynet', ['conf/skynet.conf', 'conf/skynet.env'])
+                  ('etc/skynet', ['conf/skynet.conf', 'conf/skynet.env'])
                   ]
      )

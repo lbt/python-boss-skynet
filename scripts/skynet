@@ -3,7 +3,7 @@
 """ skynet script is a convenience wrapper around supervisor """
 
 import sys, os, time, glob, errno, shutil
-import xmlrpclib
+import xmlrpclib, itertools
 from optparse import OptionParser, make_option
 from ConfigParser import ConfigParser, SafeConfigParser
 from  RuoteAMQP.launcher import Launcher
@@ -143,7 +143,8 @@ def get_participant_confs():
     """
 
     confs = {}
-    for filename in glob.glob(os.path.join(get_sv_dir(), "*.conf")):
+    patterns = [os.path.join(get_sv_dir(), "*.conf"), os.path.join(get_sv_dir(), "*.ini")]
+    for filename in itertools.chain.from_iterable(glob.iglob(pat) for pat in patterns):
         conf = ConfigParser()
         conf.read(filename)
         sections = conf.sections()

@@ -186,13 +186,13 @@ def full_name(proc):
 def get_server_conf():
     """ returns supervisor server config """
     client = options.ServerOptions()
-    client.realize(raise_getopt_errs=False, args=[])
+    client.realize(args=[])
     return client
 
 def get_svp():
     """ returns supervisor xmlrpc proxy """
     client = options.ClientOptions()
-    client.realize(raise_getopt_errs=False, args=[])
+    client.realize(args=[])
     return client.getServerProxy()
 
 def remove_nonexistent_groups(group_set):

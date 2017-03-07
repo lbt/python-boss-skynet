@@ -2,7 +2,7 @@ Summary: Boss Python SkyNET
 Name: python-boss-skynet
 Version: 0.6.3
 Release: 1
-Source0: %{name}_%{version}.orig.tar.gz
+Source0: %{name}-%{version}.tar.gz
 License: UNKNOWN
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -14,7 +14,7 @@ Requires: python, python-ruote-amqp >= 2.1.0, python-amqplib, supervisor, python
 Requires(post): pwdutils
 BuildArch: noarch
 Vendor: David Greaves <david@dgreaves.com>
-Url: http://github.com/lbt/boss-python-skynet/
+Url: http://github.com/MeeGoIntegration/boss-python-skynet/
 
 %description
 UNKNOWN

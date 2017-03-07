@@ -23,9 +23,11 @@ UNKNOWN
 %setup -n %{name}-%{version} -n %{name}-%{version}
 
 %build
+sed -ie 's/__VERSION__/%{version}/g' setup.py
 make
 
 %install
+sed -ie 's/__VERSION__/%{version}/g' setup.py
 make PREFIX=%{_prefix} DESTDIR=%{buildroot} install
 mkdir -p %{buildroot}/var/log/supervisor
 

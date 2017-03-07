@@ -189,11 +189,6 @@ class Exo(object):
                         config.read(filename)
                     except ConfigParser.ParsingError, why:
                         self.log.exception(ValueError(str(why)))
-        if config.has_option("skynet", "log_level"):
-            try:
-                self.log.setLevel(config.get("skynet", "log_level"))
-            except ValueError, why:
-                self.log.exception(ValueError(str(why)))
 
         self.config = config
 
@@ -232,6 +227,14 @@ class Exo(object):
 
         # Finally read "/etc/skynet/<pname>.conf", not caring if it exists
         config.read([DEFAULT_SKYNET_CONFIG_DIR + self.name + ".conf"])
+
+        # Allow any of the configs to create a [skynet] section and
+        # override the log_level
+        if config.has_option("skynet", "log_level"):
+            try:
+                self.log.setLevel(config.get("skynet", "log_level"))
+            except ValueError, why:
+                self.log.exception(ValueError(str(why)))
 
 
     # Signals and threads are tricky.

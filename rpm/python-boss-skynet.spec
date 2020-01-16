@@ -33,13 +33,14 @@ mkdir -p %{buildroot}/var/log/supervisor
 
 %post
 
-chkconfig supervisord on || true
-service supervisord start || true
 
 if [ $1 -eq 1 ]; then
     if ! grep "skynet" /etc/passwd; then
       /usr/sbin/useradd --system skynet
     fi
+
+    systemctl start supervisord.service || true
+    systemctl enable supervisord.service || true
 else
     skynet rebuild --all || true
     skynet apply || true

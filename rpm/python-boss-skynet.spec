@@ -29,11 +29,11 @@ make
 %install
 sed -ie 's/__VERSION__/%{version}/g' setup.py
 make PREFIX=%{_prefix} DESTDIR=%{buildroot} install
+
+mkdir -p %{buildroot}%{_sysconfdir}/supervisor/conf.d
 mkdir -p %{buildroot}/var/log/supervisor
 
 %post
-
-
 if [ $1 -eq 1 ]; then
     if ! grep "skynet" /etc/passwd; then
       /usr/sbin/useradd --system skynet
@@ -56,4 +56,6 @@ fi
 %config(noreplace) %{_sysconfdir}/skynet/skynet.conf
 %config(noreplace) %{_sysconfdir}/skynet/skynet.env
 %{_sysconfdir}/skynet
+%dir %{_sysconfdir}/supervisor
+%dir %{_sysconfdir}/supervisor/conf.d
 %dir /var/log/supervisor

@@ -62,7 +62,7 @@ class ExoParticipant(Participant):
                 lambda orig_obj, wi : self.send_to_engine(wi),
                 self.exo.handler, self.exo.handler.__class__)
 
-    def consume(self):
+    def consume(self, workitem):
         """Workitem consumer.
 
         This method calls the ParticipantHandler.handle_wi() method.
@@ -73,11 +73,11 @@ class ExoParticipant(Participant):
             defined, workitem is dumped to participant log
 
         """
-        if self.workitem.fields.debug_trace:
-            self.exo.handler.log.info(workitem_summary(self.workitem))
-        if self.workitem.fields.debug_dump or self.workitem.params.debug_dump:
-            self.exo.handler.log.info(self.workitem.dump())
-        self.exo.handler.handle_wi(self.workitem)
+        if workitem.fields.debug_trace:
+            self.exo.handler.log.info(workitem_summary(workitem))
+        if workitem.fields.debug_dump or workitem.params.debug_dump:
+            self.exo.handler.log.info(workitem.dump())
+        self.exo.handler.handle_wi(workitem)
 
     def send_to_engine(self, witem):
         self.reply_to_engine(workitem=witem)
@@ -101,18 +101,7 @@ class Exo(object):
       messages.
 
     ParticipantHandler.handle_wi(Workitem)
-
-      This replaces the old consume() method and passes in a Workitem;
-      code like:
-
-        def consume(self):
-          wi = self.workitem
-          ...
-
-      is replaced by:
-
-        def handle_wi(wi):
-          ...
+      This method is called with the actual workitem to be processed.
 
     The messages objects passed are obtained using:
       from SkyNET import (WorkItemCtrl, ParticipantCtrl, Workitem)
@@ -233,6 +222,7 @@ class Exo(object):
         if config.has_option("skynet", "log_level"):
             try:
                 self.log.setLevel(config.get("skynet", "log_level"))
+                self.log.info("Set log level to %s" % config.get("skynet", "log_level"))
             except ValueError, why:
                 self.log.exception(ValueError(str(why)))
 
@@ -278,7 +268,7 @@ class Exo(object):
                 #
                 # signal.siginterrupt(signal.SIGTERM, False)
 
-                self.log.info("Now starting")
+                self.log.info("Now starting ExoParticipant2")
                 msg = WorkItemCtrl("start")
                 msg.config = self.config
                 self.handler.handle_lifecycle_control(msg)

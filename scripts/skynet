@@ -2,28 +2,35 @@
 
 """ skynet script is a convenience wrapper around supervisor """
 
-import sys, os, time, glob, errno, shutil
-import xmlrpclib, itertools
+import sys
+import os
+import time
+import glob
+import errno
+import shutil
+import xmlrpclib
+import itertools
 from optparse import OptionParser, make_option
 from ConfigParser import ConfigParser, SafeConfigParser
-from  RuoteAMQP.launcher import Launcher
+from RuoteAMQP.launcher import Launcher
 from supervisor import options, xmlrpc, datatypes, states
 from threading import Thread
 
 DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
 
+
 class LauncherConfigError(RuntimeError):
 
     """ error class raised in case misconfigured launcher """
     def __init__(self, opt, section):
-        super(LauncherConfigError, 
+        super(LauncherConfigError,
               self).__init__(
             "No option '%s' provided in section '%s' of any config files." %
             (opt, section))
 
-class Registrar(Launcher):
 
-    #FIXME: move to SkyNET or to RuoteAMQP
+class Registrar(Launcher):
+    # FIXME: move to SkyNET or to RuoteAMQP
     """
     registers / unregisters a participant in BOSS
     """
@@ -34,12 +41,12 @@ class Registrar(Launcher):
 
         self.parse_config()
 
-        super(Registrar , self).__init__(amqp_host = self.amqp_host,
-                                        amqp_user = self.amqp_user,
-                                        amqp_pass = self.amqp_pwd,
-                                        amqp_vhost= self.amqp_vhost,
+        super(Registrar, self).__init__(amqp_host=self.amqp_host,
+                                        amqp_user=self.amqp_user,
+                                        amqp_pass=self.amqp_pwd,
+                                        amqp_vhost=self.amqp_vhost,
                                         *args, **kwargs)
-        
+
     def register(self, name, queue=None):
         """
         This mechanism relies on there being a "boss_register"
@@ -91,17 +98,18 @@ class Registrar(Launcher):
             else:
                 self.__dict__[opt] = config.get(section, opt)
 
-def do_unregister(argv):
 
+def do_unregister(argv):
     """ Subcommand to launch an unregister process """
 
     usage = ('%prog unregister [--all] participant..\n')
-    description = "%prog unregisters a SkyNET participant from the BOSS engine."
+    description = ("%prog unregisters a SkyNET"
+                   " participant from the BOSS engine.")
 
     opts, args = default_oparser(argv, usage, description)
     reg = Registrar()
 
-    for _ , (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in get_participant_confs().items():
         if name in args or opts.all:
             name_in = "name"
             if conf.has_option("participant", "regexp"):
@@ -112,8 +120,8 @@ def do_unregister(argv):
     reg.chan.close()
     reg.conn.close()
 
+
 def do_register(argv):
-    
     """ Subcommand to launch an register process """
 
     usage = ('%prog register [--all] participant..\n')
@@ -122,7 +130,7 @@ def do_register(argv):
     opts, args = default_oparser(argv, usage, description)
     reg = Registrar()
 
-    for _ , (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in get_participant_confs().items():
         if name in args or opts.all:
             name_in = "name"
             if conf.has_option("participant", "regexp"):
@@ -133,8 +141,8 @@ def do_register(argv):
     reg.chan.close()
     reg.conn.close()
 
-def get_participant_confs():
 
+def get_participant_confs():
     """
     Utiliy function that finds all participant configuration files that are
     under supervisor control
@@ -143,34 +151,40 @@ def get_participant_confs():
     """
 
     confs = {}
-    patterns = [os.path.join(get_sv_dir(), "*.conf"), os.path.join(get_sv_dir(), "*.ini")]
-    for filename in itertools.chain.from_iterable(glob.iglob(pat) for pat in patterns):
+    patterns = [os.path.join(get_sv_dir(), "*.conf"),
+                os.path.join(get_sv_dir(), "*.ini")]
+    for filename in itertools.chain.from_iterable(
+            glob.iglob(pat) for pat in patterns):
         conf = ConfigParser()
         conf.read(filename)
         sections = conf.sections()
 
-        if not "participant" in sections:
+        if "participant" not in sections:
             continue
         for sect in sections:
             if "program:" in sect:
                 name = sect.replace("program:", "")
-        
-        confs[filename] = ( name , conf )
+
+        confs[filename] = (name, conf)
     return confs
+
 
 def get_running_states():
     """ returns list of supervisor running process state names """
-    return [ states.getProcessStateDescription(code) for code in \
-             states.RUNNING_STATES ]
+    return [states.getProcessStateDescription(code) for code in
+            states.RUNNING_STATES]
+
 
 def get_stopped_states():
     """ returns list of supervisor stopped process state names """
-    return [ states.getProcessStateDescription(code) for code in \
-             states.STOPPED_STATES ]
+    return [states.getProcessStateDescription(code) for code in
+            states.STOPPED_STATES]
+
 
 def get_all_states():
     """ returns list of all supervisor process state names """
     return get_running_states() + get_stopped_states()
+
 
 def get_participants_status(name=None):
     """ returns list of all supervisor known processes info """
@@ -179,9 +193,11 @@ def get_participants_status(name=None):
         return svd.supervisor.getProcessInfo(name)
     return svd.supervisor.getAllProcessInfo()
 
+
 def full_name(proc):
     """ returns full name of a supervisor process """
     return "%s:%s" % (proc["group"], proc["name"])
+
 
 def get_server_conf():
     """ returns supervisor server config """
@@ -189,11 +205,13 @@ def get_server_conf():
     client.realize(args=[])
     return client
 
+
 def get_svp():
     """ returns supervisor xmlrpc proxy """
     client = options.ClientOptions()
     client.realize(args=[])
     return client.getServerProxy()
+
 
 def remove_nonexistent_groups(group_set):
     """ removes process group that don't exist from a set of group names """
@@ -203,13 +221,15 @@ def remove_nonexistent_groups(group_set):
         print "participant group %s does not exist, ignoring it" % group
     return group_set & found_groups
 
+
 def remove_nonexistent_procs(proc_set):
     """ removes process names that don't exist from a set of process names """
 
-    found_procs = set([ full_name(proc) for proc in get_participants_status()])
+    found_procs = set([full_name(proc) for proc in get_participants_status()])
     for proc in proc_set - found_procs:
         print "participant %s does not exist, ignoring it" % proc
     return proc_set & found_procs
+
 
 def default_oparser(argv, usage, description, additional_options=None,
                     add_all=True):
@@ -243,6 +263,7 @@ def default_oparser(argv, usage, description, additional_options=None,
 
     return opts, args
 
+
 def install_oparser(argv):
     """ install subcommand option parser """
 
@@ -254,32 +275,32 @@ def install_oparser(argv):
 
     parser.add_option("-n", "--name", dest="name",
                       type="string", default=None,
-                      help="The instance name of the participant (must be"\
-                           " unique). Defaults to basename of participant"\
+                      help="The instance name of the participant (must be"
+                           " unique). Defaults to basename of participant"
                            " without [.py]")
 
     parser.add_option("-r", "--regexp", dest="regexp",
                       type="string", default=None,
-                      help="The ruote regex used to call the participant in"\
+                      help="The ruote regex used to call the participant in"
                            " process definitions (defaults to <name>)")
 
     parser.add_option("-q", "--queue", dest="queue",
                       type="string", default=None,
-                      help="The queue the participant uses (defaults to"\
+                      help="The queue the participant uses (defaults to"
                            " <name>)")
 
     parser.add_option("-p", "--participant", dest="pcode",
                       type="string", default=None,
-                      help="[DEPRECATED] The filename of the"\
-                      " participant class definition (only for backward"\
+                      help="[DEPRECATED] The filename of the"
+                      " participant class definition (only for backward"
                       " compatibility)")
 
     parser.add_option("-u", "--user", dest="user",
                       type="string", default="nobody",
                       help="Run the participant as a certain user")
 
-    parser.add_option("-i", "--instances", dest="icount", type="int", default=1,
-                      help="Number of instances to run")
+    parser.add_option("-i", "--instances", dest="icount", type="int",
+                      default=1, help="Number of instances to run")
 
     opts, args = parser.parse_args(argv)
 
@@ -289,8 +310,8 @@ def install_oparser(argv):
 
     return opts, args
 
-def install_ohandler(opts, args):
 
+def install_ohandler(opts, args):
     """ install subcommand option handler """
 
     if not opts.pcode:
@@ -314,10 +335,10 @@ def install_ohandler(opts, args):
 
     return opts
 
-def get_sv_dir():
 
-    """ 
-    get the supervisor config directory as set in 
+def get_sv_dir():
+    """
+    get the supervisor config directory as set in
     /etc/skynet/skynet.conf
     This directory needs to be included in supervisor config
     """
@@ -328,13 +349,13 @@ def get_sv_dir():
         conf = ConfigParser()
         conf.read(cfile)
         if conf.has_section("skynet"):
-            if conf.has_option("skynet","service_dir"):
-                dir_name = conf.get("skynet","service_dir")
+            if conf.has_option("skynet", "service_dir"):
+                dir_name = conf.get("skynet", "service_dir")
 
     return dir_name
 
-def write_sv_conf(opts, config=None):
 
+def write_sv_conf(opts, config=None):
     """ write or rewrite a participant supervisor config file """
 
     server_conf = get_server_conf()
@@ -346,7 +367,7 @@ def write_sv_conf(opts, config=None):
         config = ConfigParser()
     sect = "program:%s" % opts.name
     env = 'PYTHONUNBUFFERED=1,HOME="%s",USER="%s"' % \
-          ( os.path.expanduser("~%s" % opts.user), opts.user )
+          (os.path.expanduser("~%s" % opts.user), opts.user)
 
     config.add_section(sect)
     config.set(sect, "command", "/usr/bin/skynet_exo %s" % sv_conf)
@@ -360,8 +381,8 @@ def write_sv_conf(opts, config=None):
     config.set(sect, "startretries", "10")
     config.set(sect, "stopwaitsecs", "10")
     config.set(sect, "redirect_stderr", "true")
-    config.set(sect, "stdout_logfile", logdir + "/%(program_name)s_"\
-                                       "%(process_num)s.log")
+    config.set(sect, "stdout_logfile", logdir + "/%(program_name)s_"
+               "%(process_num)s.log")
     config.set(sect, "stderr_logfile", "off")
     config.set(sect, "environment", env)
 
@@ -376,8 +397,8 @@ def write_sv_conf(opts, config=None):
     with open(sv_conf, 'wb') as configfile:
         config.write(configfile)
 
-def do_install(argv):
 
+def do_install(argv):
     """ install subcommand handler """
 
     opts, pargs = install_oparser(argv)
@@ -389,8 +410,8 @@ def do_install(argv):
 
     write_sv_conf(opts)
 
-def do_uninstall(argv):
 
+def do_uninstall(argv):
     """ uninstall subcommand handler """
 
     usage = "%prog uninstall [--all] participant.."
@@ -399,7 +420,7 @@ def do_uninstall(argv):
     opts, args = default_oparser(argv, usage, description)
 
     for filename, (name, conf) in get_participant_confs().items():
-        if not name in args and not opts.all:
+        if name not in args and not opts.all:
             continue
 
         if not conf.has_option("participant", "user_managed"):
@@ -424,8 +445,8 @@ def do_uninstall(argv):
         os.remove(filename)
         print "Removed %s" % filename
 
-def do_wait(argv):
 
+def do_wait(argv):
     """ internal subcommand to wait for a state transition of participants """
 
     usage = "%prog wait --state <STATENAME> participant.."
@@ -435,9 +456,9 @@ def do_wait(argv):
     parser.add_option("--state", dest="state", metavar="STATENAME",
                       type="choice", choices=get_all_states(),
                       help="Override state to be waited for")
-    
+
     opts, args = parser.parse_args(argv)
-    
+
     if not args:
         parser.error("Need at least one participant to wait for")
     if not opts.state:
@@ -457,32 +478,34 @@ def do_wait(argv):
                         print "%s FAILED" % proc["name"].ljust(40)
                         failed_procs.add(proc["name"])
                 elif (proc["statename"] == opts.state
-                  and proc["name"] not in failed_procs
-                  and not proc["name"] in transitioned_procs):
-                    print "%s %s" % ( proc["name"].ljust(40), opts.state)
+                      and proc["name"] not in failed_procs
+                      and not proc["name"] in transitioned_procs):
+                    print "%s %s" % (proc["name"].ljust(40), opts.state)
                     transitioned_procs.add(proc["name"])
-                elif proc["statename"] != opts.state \
-                     and proc["name"] not in failed_procs:
+                elif (proc["statename"] != opts.state
+                      and proc["name"] not in failed_procs):
                     all_transitioned = False
 
         time.sleep(1)
 
-        if all_transitioned == True:
+        if all_transitioned is True:
             done = True
         count = count + 1
     if not done:
         print "waited too long"
 
+
 def start_thread(name, wait):
     """ start process thread """
     get_svp().supervisor.startProcess(name, wait)
+
 
 def stop_thread(name, wait):
     """ stop process thread """
     get_svp().supervisor.stopProcess(name, wait)
 
-def toggle_start_stop(argv, usage, description, wait_for_state):
 
+def toggle_start_stop(argv, usage, description, wait_for_state):
     """ START or STOP some participants """
 
     opts, args = default_oparser(argv, usage, description)
@@ -496,16 +519,16 @@ def toggle_start_stop(argv, usage, description, wait_for_state):
     threads = []
     for proc in get_participants_status():
         if (proc["group"] in pgroups or opts.all
-            and not proc["name"] in proc_names):
+                and not proc["name"] in proc_names):
 
             thr = False
 
-            if ( wait_for_state in get_stopped_states()
-                 and proc["statename"] not in get_stopped_states() ):
+            if (wait_for_state in get_stopped_states()
+                    and proc["statename"] not in get_stopped_states()):
                 thr = Thread(target=stop_thread, args=(full_name(proc),
                              False))
-            elif ( wait_for_state in get_running_states()
-                   and proc["statename"] not in get_running_states() ):
+            elif (wait_for_state in get_running_states()
+                  and proc["statename"] not in get_running_states()):
                 thr = Thread(target=start_thread, args=(full_name(proc),
                              False))
             if thr:
@@ -524,10 +547,10 @@ def toggle_start_stop(argv, usage, description, wait_for_state):
         do_wait(group_names)
     else:
         print "nothing %s" % wait_for_state
-        sys.exit(1) 
+        sys.exit(1)
+
 
 def do_stop(argv):
-
     """ stop subcommand handler """
 
     usage = "%prog stop [--all] participant.."
@@ -536,8 +559,8 @@ def do_stop(argv):
 
     toggle_start_stop(argv, usage, description, "STOPPED")
 
-def do_start(argv):
 
+def do_start(argv):
     """ start subcommand handler """
 
     usage = "%prog start [--all] participant.."
@@ -545,15 +568,15 @@ def do_start(argv):
 
     toggle_start_stop(argv, usage, description, "RUNNING")
 
-def toggle_enable_disable(opts, args, toggle_name, toggle_to):
 
+def toggle_enable_disable(opts, args, toggle_name, toggle_to):
     """ enable or disable some participants """
 
-    for filename , (name, conf) in get_participant_confs().items():
+    for filename, (name, conf) in get_participant_confs().items():
         if opts.all or name in args:
             section = "program:%s" % name
-            if conf.get(section, "autorestart") == toggle_to\
-            and conf.get(section, "autostart") == toggle_to:
+            if (conf.get(section, "autorestart") == toggle_to
+                    and conf.get(section, "autostart") == toggle_to):
                 print "%s already %sd." % (name, toggle_name)
             else:
                 conf.set(section, "autorestart", toggle_to)
@@ -572,7 +595,6 @@ def toggle_enable_disable(opts, args, toggle_name, toggle_to):
 
 
 def do_disable(argv):
-
     """ disable subcommand handler """
 
     usage = "%prog disable [--all] [--apply] participant.."
@@ -583,13 +605,13 @@ def do_disable(argv):
     aopts = [make_option("--apply", default=False,
              action="store_true", dest="apply")]
 
-    opts, args = default_oparser(argv, usage, description, \
-                              additional_options = aopts)
+    opts, args = default_oparser(argv, usage, description,
+                                 additional_options=aopts)
 
     toggle_enable_disable(opts, args, "disable", "false")
 
-def do_enable(argv):
 
+def do_enable(argv):
     """ enable subcommand handler """
 
     usage = "%prog enable [--all] participant.."
@@ -600,27 +622,27 @@ def do_enable(argv):
     aopts = [make_option("--apply", default=False,
              action="store_true", dest="apply")]
 
-    opts, args = default_oparser(argv, usage, description, \
-                              additional_options = aopts)
+    opts, args = default_oparser(argv, usage, description,
+                                 additional_options=aopts)
 
     toggle_enable_disable(opts, args, "enable", "true")
 
-def do_reload(argv):
 
+def do_reload(argv):
     """ reload subcommand handler """
 
     usage = "%prog reload [--all] participant.."
-    description = "Cycles the running participant to reload the code."\
-            "This is normaly done when participant or skynet python wrapper"\
-            "is upgraded."
+    description = ("Cycles the running participant to reload the code."
+                   "This is normaly done when participant or skynet "
+                   "python wrapperis upgraded.")
 
     _, _ = default_oparser(argv, usage, description)
- 
+
     do_stop(argv)
     do_start(argv)
 
-def do_list(argv):
 
+def do_list(argv):
     """ list subcommand handler """
 
     usage = "%prog list [--all] [--enabled]"
@@ -635,19 +657,20 @@ def do_list(argv):
     if not argv:
         argv.append("*")
 
-    opts, _ = default_oparser(argv, usage, description, \
-                              additional_options = aopts)
+    opts, _ = default_oparser(argv, usage, description,
+                              additional_options=aopts)
 
     if opts.all and opts.enabled:
         print "--all and --enabled cannot be used at the same time"
         sys.exit(1)
 
     for proc in get_participants_status():
-        name , number = proc["name"].rsplit("_", 1)
-        if number == "0": number = " "
-        if (opts.all
-            or (opts.enabled and proc["statename"] in get_running_states())
-            or (opts.disabled and proc["statename"] in get_stopped_states())):
+        name, number = proc["name"].rsplit("_", 1)
+        if number == "0":
+            number = " "
+        if (opts.all or (
+                opts.enabled and proc["statename"] in get_running_states()) or
+                (opts.disabled and proc["statename"] in get_stopped_states())):
             print "%s %s" % (name.ljust(40), number)
         elif not opts.all and not opts.enabled and not opts.disabled:
             prefix = " "
@@ -657,7 +680,6 @@ def do_list(argv):
 
 
 def do_status(argv):
-
     """ status subcommand handler """
 
     usage = "%prog status [--all] [program_name...]"
@@ -671,12 +693,13 @@ def do_status(argv):
     for proc in get_participants_status():
         if args and not proc["group"] in args:
             continue
-        name , number = proc["name"].rsplit("_", 1)
-        if number == "0": number = " "
+        name, number = proc["name"].rsplit("_", 1)
+        if number == "0":
+            number = " "
         print "%s %s %s" % (name.ljust(40), number, proc["statename"])
 
-def do_manual(argv):
 
+def do_manual(argv):
     """ manual subcommand handler """
 
     usage = "%prog manual participant"
@@ -689,22 +712,22 @@ def do_manual(argv):
         sys.exit(1)
 
     for _, (name, conf) in get_participant_confs().items():
-        if not name in args:
+        if name not in args:
             continue
 
         for proc in get_participants_status():
             if proc["group"] == name and proc["statename"] == "RUNNING":
                 print "There is a running instance of %s"\
                       " use supervisorctl fg " % name
-                sys.exit(1) 
+                sys.exit(1)
 
         sect = "program:%s" % name
         command = conf.get(sect, "command").split()
         env = datatypes.dict_of_key_value_pairs(conf.get(sect, "environment"))
         os.execve(command[0], command, env)
 
-def do_rebuild(argv):
 
+def do_rebuild(argv):
     """ rebuild subcommand handler """
 
     usage = "%prog rebuild [--all] participant..."
@@ -715,29 +738,28 @@ def do_rebuild(argv):
              action="store_true", dest="force")]
 
     opts, args = default_oparser(argv, usage, description,
-                                 additional_options = aopts)
+                                 additional_options=aopts)
 
     for _, (name, conf) in get_participant_confs().items():
-        if not name in args and not opts.all:
+        if name not in args and not opts.all:
             continue
 
         if (not conf.has_option("participant", "user_managed")
-        and not opts.force):
+                and not opts.force):
             print "%s is not user managed, configuration file under package"\
                    " manager control, SKIPPING" % name
             continue
 
-        fake_args = [ "-n", conf.get("participant", "name"),
-                      "-q", conf.get("participant", "queue"),
-                      "-r", conf.get("participant", "regexp"),
-                      "-u", conf.get("program:%s" % name, "user"),
-                      "-i", conf.get("program:%s" % name, "numprocs"),
-                            conf.get("participant", "code")
-                      ]
+        fake_args = ["-n", conf.get("participant", "name"),
+                     "-q", conf.get("participant", "queue"),
+                     "-r", conf.get("participant", "regexp"),
+                     "-u", conf.get("program:%s" % name, "user"),
+                     "-i", conf.get("program:%s" % name, "numprocs"),
+                     conf.get("participant", "code")]
         do_install(fake_args)
 
-def add_include_dir():
 
+def add_include_dir():
     """ adds the needed include dir to supervisor config """
 
     server_conf = ConfigParser()
@@ -755,7 +777,7 @@ def add_include_dir():
         files = server_conf.get("include", "files")
         files = files.split()
         sv_dir_glob = "%s/*.conf" % sv_dir
-        if not sv_dir_glob in files:
+        if sv_dir_glob not in files:
             files.append(sv_dir_glob)
             server_conf.set("include", "files", " ".join(files))
             changed = True
@@ -771,7 +793,6 @@ def add_include_dir():
 
 
 def do_apply(argv):
-
     """ apply subcommand handler """
 
     usage = "%prog apply"
@@ -807,7 +828,6 @@ def do_apply(argv):
 
 
 def do_log(argv):
-
     """ log subcommand handler """
 
     usage = "%prog log [--all] [-n LINES] [-o] participant..."
@@ -822,7 +842,7 @@ def do_log(argv):
              ]
 
     opts, args = default_oparser(argv, usage, description,
-                                 additional_options = aopts)
+                                 additional_options=aopts)
 
     if not args and not opts.all:
         print "need at least one participant name to show its log"
@@ -838,7 +858,7 @@ def do_log(argv):
         if not opts.once:
             command.append("-F")
         if opts.number:
-            command.extend(["-n","%d" % opts.number])
+            command.extend(["-n", "%d" % opts.number])
         command.extend(logfiles)
         os.execvp(command[0], command)
     else:
@@ -846,31 +866,30 @@ def do_log(argv):
 
 
 def subcmd_dispatcher():
-
     """ subcommand dispatcher """
 
     sub_cmds = {
-                "status"     : do_status,
-                "list"       : do_list,
-                "reload"     : do_reload,
-                "enable"     : do_enable,
-                "start"      : do_start,
-                "stop"       : do_stop,
-                "disable"    : do_disable,
-                "install"    : do_install,
-                "uninstall"  : do_uninstall,
-                "register"   : do_register,
-                "unregister" : do_unregister,
-                "rebuild"    : do_rebuild,
-                "manual"     : do_manual,
-                "apply"      : do_apply,
-                "log"        : do_log,
-               }
+        "status":      do_status,
+        "list":        do_list,
+        "reload":      do_reload,
+        "enable":      do_enable,
+        "start":       do_start,
+        "stop":        do_stop,
+        "disable":     do_disable,
+        "install":     do_install,
+        "uninstall":   do_uninstall,
+        "register":    do_register,
+        "unregister":  do_unregister,
+        "rebuild":     do_rebuild,
+        "manual":      do_manual,
+        "apply":       do_apply,
+        "log":         do_log,
+    }
 
     usage = "prog <command> <opts>"
-    description = "<command> is one of: " + ", ".join(sub_cmds.keys()) + "."\
-            "Try `%prog <command> --help' for more information about a"\
-            " specific command."
+    description = ("<command> is one of: " + ", ".join(sub_cmds.keys()) + "."
+                   "Try `%prog <command> --help' for more information about a"
+                   " specific command.")
 
     parser = OptionParser(usage=usage, description=description)
     parser.disable_interspersed_args()
@@ -884,8 +903,8 @@ def subcmd_dispatcher():
 
     sub_cmds[args[0]](sys.argv[2:])
 
-def main():
 
+def main():
     """ main function """
 
     try:
@@ -896,21 +915,21 @@ def main():
             sys.exit(1)
 
         elif exc.filename:
-            exc_str = "{0}({1}): {2} {3}".format(exc.__class__.__name__, \
-                                                 exc.errno, exc.filename, \
+            exc_str = "{0}({1}): {2} {3}".format(exc.__class__.__name__,
+                                                 exc.errno, exc.filename,
                                                  exc.strerror)
         elif exc.errno and exc.strerror:
-            exc_str = "{0}({1}): {2}".format(exc.__class__.__name__, \
-                                                 exc.errno, exc.strerror)
+            exc_str = "{0}({1}): {2}".format(exc.__class__.__name__,
+                                             exc.errno, exc.strerror)
 
         else:
             exc_str = "{0}: {1}".format(exc.__class__.__name__, str(exc))
-
 
         if not os.getuid() == 0:
             exc_str = exc_str + ", and you are not root"
         print exc_str
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

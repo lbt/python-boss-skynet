@@ -1,30 +1,39 @@
 #!/usr/bin/python
 # -*- coding: utf-8; tab-width: 4 -*-
-import os, sys, glob, traceback, signal
+import os
+import sys
+import glob
+import traceback
+import signal
 import ConfigParser
-from  RuoteAMQP.participant import Participant
+from RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
 import types
 import logging
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+                    level=logging.INFO)
 
 DEFAULT_SKYNET_CONFIG_DIR = "/etc/skynet/"
 DEFAULT_SKYNET_CONFIG_FILE = "/etc/skynet/skynet.conf"
+
 
 class ParticipantHandlerNotDefined(RuntimeError):
     def __init__(self):
         super(ParticipantHandlerNotDefined, self).__init__(
                 "ParticipantHandler class not found")
 
+
 class InvalidParticipantHandlerSignature(RuntimeError):
     pass
+
 
 class ParticipantConfigError(RuntimeError):
     def __init__(self, opt, section, reason="missing"):
         super(ParticipantConfigError, self).__init__(
             "Option '%s' for section '%s' is %s" %
             (opt, section, reason))
+
 
 def workitem_summary(wid):
     parts = ["Taking workitem"]
@@ -46,6 +55,7 @@ def workitem_summary(wid):
             parts.append("%s=%s" % (key, repr(value)))
     return ' '.join(parts)
 
+
 class ExoParticipant(Participant):
     """
     This class runs the normal participant handling code.
@@ -59,7 +69,7 @@ class ExoParticipant(Participant):
         self.exo = exo
         # Write a closure into the ParticipantHandler namespace
         self.exo.handler.send_to_engine = types.MethodType(
-                lambda orig_obj, wi : self.send_to_engine(wi),
+                lambda orig_obj, wi: self.send_to_engine(wi),
                 self.exo.handler, self.exo.handler.__class__)
 
     def consume(self, workitem):
@@ -82,6 +92,7 @@ class ExoParticipant(Participant):
     def send_to_engine(self, witem):
         self.reply_to_engine(workitem=witem)
 
+        
 class Exo(object):
     """
     The Exo class provides the SkyNET participant exoskeleton.  This
@@ -131,8 +142,8 @@ class Exo(object):
         self.log = logging.getLogger("Exo")
 
         self.queue = self.amqp_host = self.amqp_user = self.amqp_pwd = \
-                self.amqp_vhost = self.code = self.codepath = self.name = \
-                self.config = self.graceful_shutdown = None
+            self.amqp_vhost = self.code = self.codepath = self.name = \
+            self.config = self.graceful_shutdown = None
 
         self.parse_config(local_config_file)
 
@@ -143,17 +154,18 @@ class Exo(object):
         p_namespace = __import__(self.code)
 
         # Create an I woinstance
-        for key in ("name", "amqp_host", "amqp_user", "amqp_pwd", "amqp_vhost"):
+        for key in ("name", "amqp_host", "amqp_user",
+                    "amqp_pwd", "amqp_vhost"):
             self.log.debug("%s : %s" % (key, getattr(self, key, "???")))
 
         # Complain if there is no ParticipantHandler class
         try:
             self.handler = p_namespace.ParticipantHandler()
-        except NameError, exobj:
+        except NameError as exobj:
             raise ParticipantHandlerNotDefined()
-        except TypeError, exobj:
+        except TypeError as exobj:
             raise InvalidParticipantHandlerSignature(str(exobj))
-        except Exception, exobj:
+        except Exception as exobj:
             raise exobj
 
         self.handler.log = self.log
@@ -172,11 +184,11 @@ class Exo(object):
         config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
         if config.has_option("skynet", "include_dir"):
             if os.path.exists(config.get("skynet", "include_dir")):
-                for filename in glob.glob("%s/*.conf" % config.get("skynet",
-                                                            "include_dir")):
+                for filename in glob.glob(
+                        "%s/*.conf" % config.get("skynet", "include_dir")):
                     try:
                         config.read(filename)
-                    except ConfigParser.ParsingError, why:
+                    except ConfigParser.ParsingError as why:
                         self.log.exception(ValueError(str(why)))
 
         self.config = config
@@ -212,7 +224,7 @@ class Exo(object):
         self.code, _, ext = self.code.partition(".")
         if not ext == "py":
             raise ParticipantConfigError("code", section,
-                "invalid: Not a .py file")
+                                         "invalid: Not a .py file")
 
         # Finally read "/etc/skynet/<pname>.conf", not caring if it exists
         config.read([DEFAULT_SKYNET_CONFIG_DIR + self.name + ".conf"])
@@ -222,10 +234,10 @@ class Exo(object):
         if config.has_option("skynet", "log_level"):
             try:
                 self.log.setLevel(config.get("skynet", "log_level"))
-                self.log.info("Set log level to %s" % config.get("skynet", "log_level"))
-            except ValueError, why:
+                self.log.info(
+                    "Set log level to %s" % config.get("skynet", "log_level"))
+            except ValueError as why:
                 self.log.exception(ValueError(str(why)))
-
 
     # Signals and threads are tricky.
     # Ensure that only the main thread sets the handler

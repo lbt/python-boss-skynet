@@ -1,5 +1,5 @@
 Summary: Boss Python SkyNET
-Name: python-boss-skynet
+Name: python3-boss-skynet
 Version: 0.6.3
 Release: 1
 Source0: %{name}-%{version}.tar.gz
@@ -9,28 +9,31 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 Obsoletes: boss-skynet < 0.6.0
 Provides: boss-skynet
-BuildRequires: python, python-distribute, supervisor
-Requires: python, python-ruote-amqp >= 2.1.0, python-amqplib, supervisor, python-setproctitle
+BuildRequires: python3, supervisor
+Requires: python3
+Requires: python3-ruote-amqp
+Requires: python3-pika
+Requires: supervisor
+Requires: python3-setproctitle
 Requires(post): pwdutils
 BuildArch: noarch
 Vendor: David Greaves <david@dgreaves.com>
 Url: http://github.com/MeeGoIntegration/boss-python-skynet/
 
 %description
-UNKNOWN
+This provides the Exo wrapper for BOSS participants
 
 %prep
 %setup -n %{name}-%{version} -n %{name}-%{version}
 
 %build
-sed -ie 's/__VERSION__/%{version}/g' setup.py
-make
+%python3_build
 
 %install
 sed -ie 's/__VERSION__/%{version}/g' setup.py
-make PREFIX=%{_prefix} DESTDIR=%{buildroot} install
-mkdir -p %{buildroot}%{_datadir}/boss-skynet
+%python3_install
 
+mkdir -p %{buildroot}%{_datadir}/boss-skynet
 mkdir -p %{buildroot}%{_sysconfdir}/supervisor/conf.d
 mkdir -p %{buildroot}/var/log/supervisor
 

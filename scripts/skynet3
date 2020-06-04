@@ -8,10 +8,10 @@ import time
 import glob
 import errno
 import shutil
-import xmlrpclib
+import xmlrpc.client
 import itertools
 from optparse import OptionParser, make_option
-from ConfigParser import ConfigParser, SafeConfigParser
+from configparser import ConfigParser, SafeConfigParser
 from RuoteAMQP.launcher import Launcher
 from supervisor import options, xmlrpc, datatypes, states
 from threading import Thread
@@ -109,7 +109,7 @@ def do_unregister(argv):
     opts, args = default_oparser(argv, usage, description)
     reg = Registrar()
 
-    for _, (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in list(get_participant_confs().items()):
         if name in args or opts.all:
             name_in = "name"
             if conf.has_option("participant", "regexp"):
@@ -130,7 +130,7 @@ def do_register(argv):
     opts, args = default_oparser(argv, usage, description)
     reg = Registrar()
 
-    for _, (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in list(get_participant_confs().items()):
         if name in args or opts.all:
             name_in = "name"
             if conf.has_option("participant", "regexp"):
@@ -218,7 +218,7 @@ def remove_nonexistent_groups(group_set):
 
     found_groups = set([proc["group"] for proc in get_participants_status()])
     for group in group_set - found_groups:
-        print "participant group %s does not exist, ignoring it" % group
+        print("participant group %s does not exist, ignoring it" % group)
     return group_set & found_groups
 
 
@@ -227,7 +227,7 @@ def remove_nonexistent_procs(proc_set):
 
     found_procs = set([full_name(proc) for proc in get_participants_status()])
     for proc in proc_set - found_procs:
-        print "participant %s does not exist, ignoring it" % proc
+        print("participant %s does not exist, ignoring it" % proc)
     return proc_set & found_procs
 
 
@@ -267,9 +267,9 @@ def default_oparser(argv, usage, description, additional_options=None,
 def install_oparser(argv):
     """ install subcommand option parser """
 
-    usage = "usage : %prog [-n <name>] [-q <queue> ] [-u <user>]"\
-            " [-i <number>] [-r regexp] </full/path/to/participant.py>\n"\
-            "Try `%prog --help' for more information."
+    usage = ("usage : %prog [-n <name>] [-q <queue> ] [-u <user>]"
+             " [-i <number>] [-r regexp] </full/path/to/participant.py>\n"
+             "Try `%prog --help' for more information.")
 
     parser = OptionParser(usage=usage)
 
@@ -318,8 +318,8 @@ def install_ohandler(opts, args):
         opts.pcode = args[0]
 
     if not os.path.exists(opts.pcode):
-        print "Participant logic snippet : %s does not exist. SKIPPING" % \
-                                                             opts.pcode
+        print("Participant logic snippet : %s does not exist. SKIPPING" %
+              opts.pcode)
         return False
 
     opts.pcode = os.path.realpath(opts.pcode)
@@ -366,8 +366,8 @@ def write_sv_conf(opts, config=None):
     if not config:
         config = ConfigParser()
     sect = "program:%s" % opts.name
-    env = 'PYTHONUNBUFFERED=1,HOME="%s",USER="%s"' % \
-          (os.path.expanduser("~%s" % opts.user), opts.user)
+    env = ('PYTHONUNBUFFERED=1,HOME="%s",USER="%s"' %
+           (os.path.expanduser("~%s" % opts.user), opts.user))
 
     config.add_section(sect)
     config.set(sect, "command", "/usr/bin/skynet_exo %s" % sv_conf)
@@ -405,8 +405,8 @@ def do_install(argv):
     result = install_ohandler(opts, pargs)
     if not result:
         return False
-    print "Making skynet participant(s) : %s, using %s" % (opts.name,
-                                                           opts.pcode)
+    print("Making skynet participant(s) : %s, using %s" % (opts.name,
+                                                           opts.pcode))
 
     write_sv_conf(opts)
 
@@ -419,31 +419,31 @@ def do_uninstall(argv):
 
     opts, args = default_oparser(argv, usage, description)
 
-    for filename, (name, conf) in get_participant_confs().items():
+    for filename, (name, conf) in list(get_participant_confs().items()):
         if name not in args and not opts.all:
             continue
 
         if not conf.has_option("participant", "user_managed"):
-            print "%s is not user managed, use system package manager to"\
-                   " uninstall, SKIPPING" % name
+            print("%s is not user managed, use system package manager to"
+                  " uninstall, SKIPPING" % name)
             continue
 
         try:
             svp = get_svp()
             svp.supervisor.removeProcessGroup(name)
-            print "Removed %s" % name
-        except xmlrpclib.Fault as exc:
+            print("Removed %s" % name)
+        except xmlrpc.client.Fault as exc:
             if exc.faultCode == xmlrpc.Faults.STILL_RUNNING:
 
-                print "%s has running instances, stop and disable" \
-                      " it first. SKIPPING" % name
+                print("%s has running instances, stop and disable"
+                      " it first. SKIPPING" % name)
                 continue
             elif exc.faultCode == xmlrpc.Faults.BAD_NAME:
                 pass
             else:
                 raise
         os.remove(filename)
-        print "Removed %s" % filename
+        print("Removed %s" % filename)
 
 
 def do_wait(argv):
@@ -468,19 +468,19 @@ def do_wait(argv):
     count = 1
     failed_procs = set([])
     transitioned_procs = set([])
-    print "waiting for partcipants to be %s" % opts.state
+    print("waiting for partcipants to be %s" % opts.state)
     while not done and count < 60:
         all_transitioned = True
         for proc in get_participants_status():
             if proc["group"] in argv:
                 if proc["statename"] in ["BACKOFF", "FATAL"]:
                     if not proc["name"] in failed_procs:
-                        print "%s FAILED" % proc["name"].ljust(40)
+                        print("%s FAILED" % proc["name"].ljust(40))
                         failed_procs.add(proc["name"])
                 elif (proc["statename"] == opts.state
                       and proc["name"] not in failed_procs
                       and not proc["name"] in transitioned_procs):
-                    print "%s %s" % (proc["name"].ljust(40), opts.state)
+                    print("%s %s" % (proc["name"].ljust(40), opts.state))
                     transitioned_procs.add(proc["name"])
                 elif (proc["statename"] != opts.state
                       and proc["name"] not in failed_procs):
@@ -492,7 +492,7 @@ def do_wait(argv):
             done = True
         count = count + 1
     if not done:
-        print "waited too long"
+        print("waited too long")
 
 
 def start_thread(name, wait):
@@ -546,7 +546,7 @@ def toggle_start_stop(argv, usage, description, wait_for_state):
         group_names.insert(0, "--state=%s" % wait_for_state)
         do_wait(group_names)
     else:
-        print "nothing %s" % wait_for_state
+        print("nothing %s" % wait_for_state)
         sys.exit(1)
 
 
@@ -554,8 +554,8 @@ def do_stop(argv):
     """ stop subcommand handler """
 
     usage = "%prog stop [--all] participant.."
-    description = "If a participant is running it will be stopped."\
-                  "It will be restarted on reboot."
+    description = ("If a participant is running it will be stopped."
+                   "It will be restarted on reboot.")
 
     toggle_start_stop(argv, usage, description, "STOPPED")
 
@@ -572,12 +572,12 @@ def do_start(argv):
 def toggle_enable_disable(opts, args, toggle_name, toggle_to):
     """ enable or disable some participants """
 
-    for filename, (name, conf) in get_participant_confs().items():
+    for filename, (name, conf) in list(get_participant_confs().items()):
         if opts.all or name in args:
             section = "program:%s" % name
             if (conf.get(section, "autorestart") == toggle_to
                     and conf.get(section, "autostart") == toggle_to):
-                print "%s already %sd." % (name, toggle_name)
+                print("%s already %sd." % (name, toggle_name))
             else:
                 conf.set(section, "autorestart", toggle_to)
                 conf.set(section, "autostart", toggle_to)
@@ -585,7 +585,7 @@ def toggle_enable_disable(opts, args, toggle_name, toggle_to):
                 with open(filename, 'wb') as config_fp:
                     conf.write(config_fp)
 
-                print "%s %sd." % (name, toggle_name)
+                print("%s %sd." % (name, toggle_name))
 
     if opts.apply:
         do_apply([])
@@ -598,9 +598,9 @@ def do_disable(argv):
     """ disable subcommand handler """
 
     usage = "%prog disable [--all] [--apply] participant.."
-    description = "A disabled participant will not be restarted on failure"\
-                  " and reboot. However, if running it will not be stopped"\
-                  " unless --apply is specified"
+    description = ("A disabled participant will not be restarted on failure"
+                   " and reboot. However, if running it will not be stopped"
+                   " unless --apply is specified")
 
     aopts = [make_option("--apply", default=False,
              action="store_true", dest="apply")]
@@ -615,9 +615,9 @@ def do_enable(argv):
     """ enable subcommand handler """
 
     usage = "%prog enable [--all] participant.."
-    description = "An enabled participant will be will be restarted on"\
-                  " failure and reboot. However, it will not be started"\
-                  " unless --apply is specified"
+    description = ("An enabled participant will be will be restarted on"
+                   " failure and reboot. However, it will not be started"
+                   " unless --apply is specified")
 
     aopts = [make_option("--apply", default=False,
              action="store_true", dest="apply")]
@@ -661,7 +661,7 @@ def do_list(argv):
                               additional_options=aopts)
 
     if opts.all and opts.enabled:
-        print "--all and --enabled cannot be used at the same time"
+        print("--all and --enabled cannot be used at the same time")
         sys.exit(1)
 
     for proc in get_participants_status():
@@ -671,12 +671,12 @@ def do_list(argv):
         if (opts.all or (
                 opts.enabled and proc["statename"] in get_running_states()) or
                 (opts.disabled and proc["statename"] in get_stopped_states())):
-            print "%s %s" % (name.ljust(40), number)
+            print("%s %s" % (name.ljust(40), number))
         elif not opts.all and not opts.enabled and not opts.disabled:
             prefix = " "
             if proc["statename"] in get_running_states():
                 prefix = "*"
-            print "%s %s %s" % (prefix, name.ljust(40), number)
+            print("%s %s %s" % (prefix, name.ljust(40), number))
 
 
 def do_status(argv):
@@ -696,7 +696,7 @@ def do_status(argv):
         name, number = proc["name"].rsplit("_", 1)
         if number == "0":
             number = " "
-        print "%s %s %s" % (name.ljust(40), number, proc["statename"])
+        print("%s %s %s" % (name.ljust(40), number, proc["statename"]))
 
 
 def do_manual(argv):
@@ -708,17 +708,17 @@ def do_manual(argv):
     _, args = default_oparser(argv, usage, description, add_all=False)
 
     if len(args) > 1:
-        print "only one participant can be run in the foreground"
+        print("only one participant can be run in the foreground")
         sys.exit(1)
 
-    for _, (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in list(get_participant_confs().items()):
         if name not in args:
             continue
 
         for proc in get_participants_status():
             if proc["group"] == name and proc["statename"] == "RUNNING":
-                print "There is a running instance of %s"\
-                      " use supervisorctl fg " % name
+                print("There is a running instance of %s"
+                      " use supervisorctl fg " % name)
                 sys.exit(1)
 
         sect = "program:%s" % name
@@ -731,8 +731,8 @@ def do_rebuild(argv):
     """ rebuild subcommand handler """
 
     usage = "%prog rebuild [--all] participant..."
-    description = "Rebuild a participant configuration file"\
-                  " overwriting user changes to it"
+    description = ("Rebuild a participant configuration file"
+                   " overwriting user changes to it")
 
     aopts = [make_option("--force", default=False,
              action="store_true", dest="force")]
@@ -740,14 +740,14 @@ def do_rebuild(argv):
     opts, args = default_oparser(argv, usage, description,
                                  additional_options=aopts)
 
-    for _, (name, conf) in get_participant_confs().items():
+    for _, (name, conf) in list(get_participant_confs().items()):
         if name not in args and not opts.all:
             continue
 
         if (not conf.has_option("participant", "user_managed")
                 and not opts.force):
-            print "%s is not user managed, configuration file under package"\
-                   " manager control, SKIPPING" % name
+            print("%s is not user managed, configuration file under package"
+                  " manager control, SKIPPING" % name)
             continue
 
         fake_args = ["-n", conf.get("participant", "name"),
@@ -806,7 +806,7 @@ def do_apply(argv):
 
     try:
         result = svp.supervisor.reloadConfig()
-    except xmlrpclib.Fault, exc:
+    except xmlrpc.client.Fault as exc:
         if exc.faultCode == xmlrpc.Faults.SHUTDOWN_STATE:
             return
         else:
@@ -845,7 +845,7 @@ def do_log(argv):
                                  additional_options=aopts)
 
     if not args and not opts.all:
-        print "need at least one participant name to show its log"
+        print("need at least one participant name to show its log")
         sys.exit(1)
 
     logfiles = []
@@ -862,7 +862,7 @@ def do_log(argv):
         command.extend(logfiles)
         os.execvp(command[0], command)
     else:
-        print "nothing to show"
+        print("nothing to show")
 
 
 def subcmd_dispatcher():
@@ -887,7 +887,8 @@ def subcmd_dispatcher():
     }
 
     usage = "prog <command> <opts>"
-    description = ("<command> is one of: " + ", ".join(sub_cmds.keys()) + "."
+    description = ("<command> is one of: " +
+                   ", ".join(list(sub_cmds.keys())) + ".\n"
                    "Try `%prog <command> --help' for more information about a"
                    " specific command.")
 
@@ -911,7 +912,7 @@ def main():
         subcmd_dispatcher()
     except EnvironmentError as exc:
         if exc[0] == errno.ECONNREFUSED or exc[0] == errno.ENOENT:
-            print 'ERROR: is supervisord running ?'
+            print('ERROR: is supervisord running ?')
             sys.exit(1)
 
         elif exc.filename:
@@ -927,7 +928,7 @@ def main():
 
         if not os.getuid() == 0:
             exc_str = exc_str + ", and you are not root"
-        print exc_str
+        print(exc_str)
         sys.exit(1)
 
 

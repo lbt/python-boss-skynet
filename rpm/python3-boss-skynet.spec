@@ -55,8 +55,8 @@ fi
 %{python_sitelib}/SkyNET
 %{python_sitelib}/*egg-info
 %{_datadir}/doc/%{name}
-%{_bindir}/skynet
-%{_bindir}/skynet_exo
+%{_bindir}/skynet3
+%{_bindir}/skynet3_exo
 %config(noreplace) %{_sysconfdir}/skynet/skynet.conf
 %config(noreplace) %{_sysconfdir}/skynet/skynet.env
 %{_sysconfdir}/skynet

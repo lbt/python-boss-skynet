@@ -5,7 +5,7 @@ import sys
 import glob
 import traceback
 import signal
-import ConfigParser
+import configparser
 from RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
 import types
@@ -46,7 +46,7 @@ def workitem_summary(wid):
     if wid.participant_name:
         parts.append(wid.participant_name)
     if wid.params:
-        for key, value in wid.params.as_dict().items():
+        for key, value in list(wid.params.as_dict().items()):
             # Remove some uninteresting parameters from the log
             if key in ['participant_options', 'if']:
                 continue
@@ -180,7 +180,7 @@ class Exo(object):
         # FIXME : check for the mandatory methods
 
     def parse_config(self, config_file):
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config.read([DEFAULT_SKYNET_CONFIG_FILE, config_file])
         if config.has_option("skynet", "include_dir"):
             if os.path.exists(config.get("skynet", "include_dir")):
@@ -188,7 +188,7 @@ class Exo(object):
                         "%s/*.conf" % config.get("skynet", "include_dir")):
                     try:
                         config.read(filename)
-                    except ConfigParser.ParsingError as why:
+                    except configparser.ParsingError as why:
                         self.log.exception(ValueError(str(why)))
 
         self.config = config

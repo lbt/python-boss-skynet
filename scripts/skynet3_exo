@@ -18,7 +18,7 @@ def update_env(envfile):
 
 # check for 1 arg
 if not len(sys.argv) == 2:
-    print "SkyNET Exo needs one argument, full path to a config file"
+    print("SkyNET Exo needs one argument, full path to a config file")
     sys.exit(1)
 
 update_env("/etc/skynet/skynet.env")

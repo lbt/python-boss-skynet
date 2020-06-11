@@ -9,11 +9,11 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 Obsoletes: boss-skynet < 0.6.0
 Provides: boss-skynet
-BuildRequires: python3, supervisor
+BuildRequires: python3, supervisor >= 4.0.0
 Requires: python3
 Requires: python3-ruote-amqp
 Requires: python3-pika
-Requires: supervisor
+Requires: supervisor >= 4.0.0
 Requires: python3-setproctitle
 Requires(post): pwdutils
 BuildArch: noarch

@@ -2,13 +2,13 @@ default:
 	@true
 
 docs:
-	python setup.py build_sphinx
+	python3 setup.py build_sphinx
 
 install:
-	python setup.py -q install --root=$(DESTDIR) --prefix=$(PREFIX)
+	python3 setup.py -q install --root=$(DESTDIR) --prefix=$(PREFIX)
 
 clean:
-	python setup.py clean
+	python3 setup.py clean
 	rm -rf docs/_build
 
 .PHONY: docs

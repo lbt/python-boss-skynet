@@ -1,6 +1,6 @@
 Summary: Boss Python SkyNET
 Name: python3-boss-skynet
-Version: 0.6.3
+Version: 0.7.0
 Release: 1
 Source0: %{name}-%{version}.tar.gz
 License: UNKNOWN
@@ -55,8 +55,8 @@ fi
 %{python_sitelib}/SkyNET
 %{python_sitelib}/*egg-info
 %{_datadir}/doc/%{name}
-%{_bindir}/skynet3
-%{_bindir}/skynet3_exo
+%{_bindir}/skynet
+%{_bindir}/skynet_exo
 %config(noreplace) %{_sysconfdir}/skynet/skynet.conf
 %config(noreplace) %{_sysconfdir}/skynet/skynet.env
 %{_sysconfdir}/skynet

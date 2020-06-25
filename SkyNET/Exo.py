@@ -70,7 +70,7 @@ class ExoParticipant(Participant):
         # Write a closure into the ParticipantHandler namespace
         self.exo.handler.send_to_engine = types.MethodType(
                 lambda orig_obj, wi: self.send_to_engine(wi),
-                self.exo.handler, self.exo.handler.__class__)
+                self.exo.handler)
 
     def consume(self, workitem):
         """Workitem consumer.

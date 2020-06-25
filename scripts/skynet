@@ -394,7 +394,7 @@ def write_sv_conf(opts, config=None):
     config.set(sect, "regexp", opts.regexp)
     config.set(sect, "code", opts.pcode)
 
-    with open(sv_conf, 'wb') as configfile:
+    with open(sv_conf, 'w') as configfile:
         config.write(configfile)
 
 
@@ -582,7 +582,7 @@ def toggle_enable_disable(opts, args, toggle_name, toggle_to):
                 conf.set(section, "autorestart", toggle_to)
                 conf.set(section, "autostart", toggle_to)
 
-                with open(filename, 'wb') as config_fp:
+                with open(filename, 'w') as config_fp:
                     conf.write(config_fp)
 
                 print("%s %sd." % (name, toggle_name))
@@ -788,7 +788,7 @@ def add_include_dir():
             shutil.copyfile(get_server_conf().configfile,
                             oldfile)
 
-        with open(get_server_conf().configfile, 'wb') as config_fp:
+        with open(get_server_conf().configfile, 'w') as config_fp:
             server_conf.write(config_fp)
 
 

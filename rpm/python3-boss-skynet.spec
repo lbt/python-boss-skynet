@@ -34,6 +34,7 @@ sed -ie 's/__VERSION__/%{version}/g' setup.py
 %python3_install
 
 mkdir -p %{buildroot}%{_datadir}/boss-skynet
+mkdir -p %{buildroot}%{_sysconfdir}/skynet/conf.d/
 mkdir -p %{buildroot}%{_sysconfdir}/supervisor/conf.d
 mkdir -p %{buildroot}/var/log/supervisor
 
@@ -60,6 +61,7 @@ fi
 %config(noreplace) %{_sysconfdir}/skynet/skynet.conf
 %config(noreplace) %{_sysconfdir}/skynet/skynet.env
 %{_sysconfdir}/skynet
+%{_sysconfdir}/skynet/conf.d/
 %dir %{_datadir}/boss-skynet
 %dir %{_sysconfdir}/supervisor
 %dir %{_sysconfdir}/supervisor/conf.d

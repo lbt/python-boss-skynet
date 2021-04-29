@@ -8,6 +8,7 @@ import signal
 import configparser
 from SkyNET.Control import WorkItemCtrl
 from .ExoParticipant import ExoParticipant
+import importlib
 import logging
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s',
@@ -113,7 +114,7 @@ class Exo(object):
         # We are running as a normal user anyway at this point
         # Don't catch any errors here.
         sys.path.insert(0, self.codepath)
-        p_namespace = __import__(self.code)
+        p_namespace = importlib.import_module(self.code)
 
         # Create an I woinstance
         for key in ("name", "amqp_host", "amqp_user",

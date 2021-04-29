@@ -226,8 +226,8 @@ class Exo(object):
         # Enter event loop with some trial at clean exit
 
         self.graceful_shutdown = False
-        # while self.p.running
-        while True:
+        while self.p.running():
+        #while True:
             try:
                 # Install a handler
                 signal.signal(signal.SIGTERM, self.sighandler)

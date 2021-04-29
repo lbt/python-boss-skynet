@@ -242,7 +242,7 @@ class Exo(object):
                 #
                 # signal.siginterrupt(signal.SIGTERM, False)
 
-                self.log.info("Now starting ExoParticipant2")
+                self.log.info("Now starting ExoParticipant")
                 msg = WorkItemCtrl("start")
                 msg.config = self.config
                 self.handler.handle_lifecycle_control(msg)

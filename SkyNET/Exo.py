@@ -6,9 +6,8 @@ import glob
 import traceback
 import signal
 import configparser
-from RuoteAMQP.participant import Participant
 from SkyNET.Control import WorkItemCtrl
-import types
+from .ExoParticipant import ExoParticipant
 import logging
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s',
@@ -56,43 +55,6 @@ def workitem_summary(wid):
     return ' '.join(parts)
 
 
-class ExoParticipant(Participant):
-    """
-    This class runs the normal participant handling code.
-    In order to support some sophisticated Ruote usage it writes a closure
-    into the ParticipantHandler namespace called send_to_engine()
-    This closure invokes *this* objects send_to_engine() method and
-    uses that to call the super write_to_engine()
-    """
-    def __init__(self, exo=None, *args, **kwargs):
-        super(ExoParticipant, self).__init__(*args, **kwargs)
-        self.exo = exo
-        # Write a closure into the ParticipantHandler namespace
-        self.exo.handler.send_to_engine = types.MethodType(
-                lambda orig_obj, wi: self.send_to_engine(wi),
-                self.exo.handler)
-
-    def consume(self, workitem):
-        """Workitem consumer.
-
-        This method calls the ParticipantHandler.handle_wi() method.
-
-        It also handles the following common tasks:
-
-          * If workitem.fields.debug_dump or workitem.params.debug_dump is
-            defined, workitem is dumped to participant log
-
-        """
-        if workitem.fields.debug_trace:
-            self.exo.handler.log.info(workitem_summary(workitem))
-        if workitem.fields.debug_dump or workitem.params.debug_dump:
-            self.exo.handler.log.info(workitem.dump())
-        self.exo.handler.handle_wi(workitem)
-
-    def send_to_engine(self, witem):
-        self.reply_to_engine(workitem=witem)
-
-        
 class Exo(object):
     """
     The Exo class provides the SkyNET participant exoskeleton.  This
@@ -170,7 +132,7 @@ class Exo(object):
 
         self.handler.log = self.log
         # An ExoParticipant knows about the handler
-        self.p = ExoParticipant(exo=self,
+        self.p = ExoParticipant(handler=self.handler,
                                 ruote_queue=self.queue,
                                 amqp_host=self.amqp_host,
                                 amqp_user=self.amqp_user,
